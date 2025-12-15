@@ -542,11 +542,11 @@ class UniversalSDK {
   private validateSchema(collection: string, item: any): void {
     const schema = this.schemas[collection]
     if (!schema) return
-    ;(schema.required || []).forEach((r) => {
-      if (!(r in item) || item[r] === undefined || item[r] === null) {
-        throw new Error(`Missing required field: ${r}`)
-      }
-    })
+      ; (schema.required || []).forEach((r) => {
+        if (!(r in item) || item[r] === undefined || item[r] === null) {
+          throw new Error(`Missing required field: ${r}`)
+        }
+      })
 
     Object.entries(item).forEach(([k, v]) => {
       if (v === undefined || v === null) return
@@ -696,32 +696,50 @@ class UniversalSDK {
       return { otpRequired: true }
     }
 
-    const token = this.createSession(user)
+    const token = await this.createSession(user)
     return { token, user: this.sanitizeUser(user) }
   }
 
-  createSession(user: User): string {
+  async createSession(user: User): Promise<string> {
     const token = crypto.randomUUID()
     const now = Date.now()
-    this.sessionStore.set(token, {
+    const session = {
       token,
-      user: this.sanitizeUser(user),
+      userId: user.id || user.uid,
       created: now,
       expires: now + (this.authConfig.sessionDuration || 7 * 24 * 60 * 60 * 1000),
-    })
+    }
+
+    // Store in DB instead of memory
+    await this.insert("sessions", session)
     return token
   }
 
-  getSession(token: string): Session | null {
-    const session = this.sessionStore.get(token)
-    if (!session) return null
+  async getSession(token: string): Promise<Session | null> {
+    // Try memory first (cache)
+    // But mostly fetch from DB
+    const sessions = await this.get<any>("sessions")
+    const sessionData = sessions.find(s => s.token === token)
 
-    if (Date.now() > session.expires) {
-      this.sessionStore.delete(token)
+    if (!sessionData) return null
+
+    if (Date.now() > sessionData.expires) {
+      await this.delete("sessions", sessionData.id)
       return null
     }
 
-    return session
+    // Reconstruct full session object by fetching user
+    const users = await this.get<User>("users")
+    const user = users.find(u => u.id === sessionData.userId || u.uid === sessionData.userId)
+
+    if (!user) return null
+
+    return {
+      token: sessionData.token,
+      user: this.sanitizeUser(user),
+      created: sessionData.created,
+      expires: sessionData.expires
+    }
   }
 
   refreshSession(token: string): Session | null {
@@ -733,12 +751,18 @@ class UniversalSDK {
     return session
   }
 
-  destroySession(token: string): boolean {
-    return this.sessionStore.delete(token)
+  async destroySession(token: string): Promise<boolean> {
+    const sessions = await this.get<any>("sessions")
+    const session = sessions.find(s => s.token === token)
+    if (session) {
+      await this.delete("sessions", session.id)
+      return true
+    }
+    return false
   }
 
-  getCurrentUser(token: string): User | null {
-    const session = this.getSession(token)
+  async getCurrentUser(token: string): Promise<User | null> {
+    const session = await this.getSession(token)
     return session?.user || null
   }
 

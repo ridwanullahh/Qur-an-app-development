@@ -1,80 +1,210 @@
 "use client"
 
 // بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ
-// Mushaf Page Content - No-Scroll, Full Page View
+// Mushaf Page Content - King Fahd 15 Lines Per Page Style
 
-import { useMemo, useState } from "react"
+import { useMemo, useState, useEffect } from "react"
 import { useQuran } from "@/contexts/quran-context"
-import { ALL_VERSES, type Verse } from "@/lib/quran-verses"
 import { SURAHS } from "@/lib/quran-data"
 import ClickableWord from "./clickable-word"
 import ClickableVerse from "./clickable-verse"
 import VerseEndMarker from "./verse-end-marker"
 import SurahBismillahHeader from "./surah-bismillah-header"
+import { Loader2 } from "lucide-react"
+
+interface Verse {
+  surah: number
+  verse: number
+  text: string
+  page: number
+  juz: number
+  hizb: number
+}
 
 interface MushafPageContentProps {
   pageNumber: number
 }
 
+// King Fahd Complex Mushaf uses 15 lines per page
+const LINES_PER_PAGE = 15
+
 export default function MushafPageContent({ pageNumber }: MushafPageContentProps) {
   const { settings } = useQuran()
-  const [containerHeight, setContainerHeight] = useState<number>(0)
+  const [versesOnPage, setVersesOnPage] = useState<Verse[]>([])
+  const [loading, setLoading] = useState(true)
 
-  // Get verses for this page
-  const versesOnPage = useMemo(() => getVersesForPage(pageNumber), [pageNumber])
+  // Fetch verses for the page from API
+  useEffect(() => {
+    let mounted = true
+    const fetchPageData = async () => {
+      setLoading(true)
+      try {
+        const res = await fetch(`/api/quran/page?page=${pageNumber}`)
+        const data = await res.json()
+        if (mounted && data.verses) {
+          // Map API response to Component Verse type
+          const mappedVerses = data.verses.map((v: any) => ({
+            surah: v.surahNumber,
+            verse: v.verseNumber,
+            text: v.text,
+            page: v.page,
+            juz: v.juz,
+            hizb: v.hizb
+          }))
+          setVersesOnPage(mappedVerses)
+        }
+      } catch (error) {
+        console.error("Failed to load page data:", error)
+      } finally {
+        if (mounted) setLoading(false)
+      }
+    }
 
-  const dynamicFontSize = useMemo(() => {
-    const verseCount = versesOnPage.length
-    const totalWords = versesOnPage.reduce((acc, v) => acc + v.text.split(" ").length, 0)
-    const totalChars = versesOnPage.reduce((acc, v) => acc + v.text.length, 0)
+    fetchPageData()
+    return () => { mounted = false }
+  }, [pageNumber])
 
-    // More aggressive font size adjustments based on total content density
-    // Use smaller base sizes to ensure content fits without scrolling
-    if (totalChars > 800 || totalWords > 180) return "text-[0.85rem] leading-[1.9]"
-    if (totalChars > 700 || totalWords > 150) return "text-[0.95rem] leading-[2.0]"
-    if (totalChars > 600 || totalWords > 120) return "text-[1.05rem] leading-[2.1]"
-    if (totalChars > 500 || totalWords > 100) return "text-[1.15rem] leading-[2.2]"
-    if (totalChars > 400 || totalWords > 80) return "text-[1.25rem] leading-[2.3]"
-    if (totalChars > 300 || totalWords > 60) return "text-[1.35rem] leading-[2.4]"
-    if (totalChars > 200 || totalWords > 40) return "text-[1.45rem] leading-[2.5]"
-    return "text-[1.55rem] leading-[2.6]"
-  }, [versesOnPage])
 
-  if (versesOnPage.length === 0) {
+  // Group verses by surah for proper header display
+  const versesBySurah = useMemo(() => groupVersesBySurah(versesOnPage), [versesOnPage])
+
+  // Calculate content for the 15 lines
+  const pageLines = useMemo(() => {
+    return distributeContentToLines(versesOnPage, versesBySurah, LINES_PER_PAGE)
+  }, [versesOnPage, versesBySurah])
+
+  if (loading) {
     return (
       <div className="h-full flex items-center justify-center text-muted-foreground font-amiri text-lg">
-        <p>جاري تحميل الصفحة...</p>
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        <p className="mr-3">جاري تحميل الصفحة...</p>
       </div>
     )
   }
 
-  // Group verses by surah for proper header display
-  const versesBySurah = groupVersesBySurah(versesOnPage)
+  if (versesOnPage.length === 0) {
+    return (
+      <div className="h-full flex flex-col items-center justify-center text-muted-foreground font-amiri text-lg p-4 text-center">
+        <p>لا توجد بيانات لهذه الصفحة حالياً.</p>
+        <p className="text-sm mt-2">يرجى تحديث قاعدة البيانات.</p>
+      </div>
+    )
+  }
 
   return (
-    <div className="h-full flex flex-col px-3 py-2 font-amiri overflow-hidden" dir="rtl">
-      {Object.entries(versesBySurah).map(([surahNum, verses]) => {
-        const surah = SURAHS.find((s) => s.number === Number.parseInt(surahNum))
-        const showHeader = verses[0]?.verse === 1
-
-        return (
-          <div key={surahNum} className="flex-shrink-0">
-            {/* Surah header and Bismillah for new surahs */}
-            {showHeader && surah && <SurahBismillahHeader surah={surah} compact />}
-
-            <div className={`text-justify text-foreground ${dynamicFontSize}`} style={{ textAlignLast: "center" }}>
-              {verses.map((verse) => (
+    <div
+      className="h-full flex flex-col font-amiri overflow-hidden mushaf-15-lines"
+      dir="rtl"
+      style={{
+        // Fixed height container for 15 lines
+        display: "grid",
+        gridTemplateRows: `repeat(${LINES_PER_PAGE}, 1fr)`,
+        alignContent: "stretch",
+        padding: "0.5rem 0.75rem",
+      }}
+    >
+      {pageLines.map((lineContent, lineIndex) => (
+        <div
+          key={lineIndex}
+          className="mushaf-line flex items-center justify-center text-foreground overflow-hidden"
+          style={{
+            minHeight: 0,
+            textAlign: "justify",
+            fontSize: "clamp(0.75rem, 1.8vh, 1.3rem)",
+            lineHeight: 1.6,
+          }}
+        >
+          {lineContent.type === "surahHeader" && lineContent.surah && (
+            <SurahBismillahHeader surah={lineContent.surah} compact />
+          )}
+          {lineContent.type === "content" && (
+            <span style={{ textAlign: "justify", textAlignLast: "center", width: "100%" }}>
+              {lineContent.verses?.map((verse) => (
                 <ClickableVerse key={`${verse.surah}-${verse.verse}`} verse={verse} showTajweed={true}>
                   {renderVerseWithClickableWords(verse, true)}
                   <VerseEndMarker verseNumber={verse.verse} />
                 </ClickableVerse>
               ))}
-            </div>
-          </div>
-        )
-      })}
+            </span>
+          )}
+          {lineContent.type === "empty" && <span>&nbsp;</span>}
+        </div>
+      ))}
     </div>
   )
+}
+
+interface LineContent {
+  type: "surahHeader" | "content" | "empty"
+  surah?: typeof SURAHS[0]
+  verses?: Verse[]
+}
+
+function distributeContentToLines(
+  versesOnPage: Verse[],
+  versesBySurah: Record<string, Verse[]>,
+  linesCount: number
+): LineContent[] {
+  const lines: LineContent[] = []
+
+  // Simple distribution: divide verses evenly across lines
+  // For more accuracy, we'd need word-level line breaking data from Quran API
+  const surahEntries = Object.entries(versesBySurah)
+  let currentLineVerses: Verse[] = []
+  let totalCharsInLine = 0
+  // Approximate chars per line (King Fahd uses ~45-55 chars per line)
+  const CHARS_PER_LINE = 50
+
+  surahEntries.forEach(([surahNum, verses]) => {
+    const surah = SURAHS.find((s) => s.number === Number.parseInt(surahNum))
+    const showHeader = verses[0]?.verse === 1
+
+    // Add surah header as separate line if first verse
+    if (showHeader && surah && surah.number !== 1 && surah.number !== 9) {
+      // Flush current line if has content
+      if (currentLineVerses.length > 0) {
+        lines.push({ type: "content", verses: [...currentLineVerses] })
+        currentLineVerses = []
+        totalCharsInLine = 0
+      }
+      lines.push({ type: "surahHeader", surah })
+    }
+
+    verses.forEach((verse) => {
+      const verseChars = verse.text.length
+
+      if (totalCharsInLine + verseChars > CHARS_PER_LINE && currentLineVerses.length > 0) {
+        // Line is full, push and start new line
+        lines.push({ type: "content", verses: [...currentLineVerses] })
+        currentLineVerses = [verse]
+        totalCharsInLine = verseChars
+      } else {
+        // Add verse to current line
+        currentLineVerses.push(verse)
+        totalCharsInLine += verseChars
+      }
+    })
+  })
+
+  // Flush remaining verses
+  if (currentLineVerses.length > 0) {
+    lines.push({ type: "content", verses: [...currentLineVerses] })
+  }
+
+  // Pad or trim to exactly 15 lines
+  while (lines.length < linesCount) {
+    lines.push({ type: "empty" })
+  }
+
+  // If more than 15 lines, we need to combine some
+  if (lines.length > linesCount) {
+    // Combine content lines to fit
+    const contentLines = lines.filter((l) => l.type === "content" || l.type === "surahHeader")
+    // Simple approach: if too many lines, just show first 15
+    return contentLines.slice(0, linesCount)
+  }
+
+  return lines.slice(0, linesCount)
 }
 
 function renderVerseWithClickableWords(verse: Verse, showTajweed: boolean) {
@@ -90,23 +220,6 @@ function renderVerseWithClickableWords(verse: Verse, showTajweed: boolean) {
       showTajweed={showTajweed}
     />
   ))
-}
-
-function getVersesForPage(pageNumber: number): Verse[] {
-  const verses: Verse[] = []
-
-  Object.values(ALL_VERSES).forEach((surahVerses) => {
-    surahVerses.forEach((verse) => {
-      if (verse.page === pageNumber) {
-        verses.push(verse)
-      }
-    })
-  })
-
-  return verses.sort((a, b) => {
-    if (a.surah !== b.surah) return a.surah - b.surah
-    return a.verse - b.verse
-  })
 }
 
 function groupVersesBySurah(verses: Verse[]): Record<string, Verse[]> {

@@ -1,0 +1,129 @@
+```
+"use client"
+
+import Link from "next/link"
+import { useState } from "react"
+import { useRouter } from "next/navigation"
+import { Eye, EyeOff, Loader2 } from "lucide-react"
+
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { useToast } from "@/components/ui/use-toast"
+
+export default function LoginPage() {
+    const [isLoading, setIsLoading] = useState(false)
+    const [showPassword, setShowPassword] = useState(false)
+    const [email, setEmail] = useState("")
+    const [password, setPassword] = useState("")
+    const router = useRouter()
+    // const { toast } = useToast() // Assuming toast hook exists, if not I'll just use simple error alert logic or add it later
+
+    async function onSubmit(event: React.SyntheticEvent) {
+        event.preventDefault()
+        setIsLoading(true)
+
+        try {
+            const res = await fetch("/api/auth", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ action: "login", email, password }),
+            })
+
+            const data = await res.json()
+
+            if (!res.ok) {
+                throw new Error(data.error || "Failed to login")
+            }
+
+            // Success
+            router.push("/admin")
+            router.refresh()
+        } catch (error: any) {
+            alert(error.message) // Simple alert for now as I don't want to assume toaster setup
+        } finally {
+            setIsLoading(false)
+        }
+    }
+
+    return (
+        <>
+            <div className="flex flex-col space-y-2 text-center">
+                <h1 className="text-2xl font-semibold tracking-tight font-amiri">تسجيل الدخول</h1>
+                <p className="text-sm text-muted-foreground">
+                    أدخل بريدك الإلكتروني للدخول إلى حسابك
+                </p>
+            </div>
+            <div className="grid gap-6">
+                <form onSubmit={onSubmit}>
+                    <div className="grid gap-4">
+                        <div className="grid gap-2">
+                            <Label htmlFor="email">البريد الإلكتروني</Label>
+                            <Input
+                                id="email"
+                                placeholder="name@example.com"
+                                type="email"
+                                autoCapitalize="none"
+                                autoComplete="email"
+                                autoCorrect="off"
+                                disabled={isLoading}
+                                value={email}
+                                onChange={(e) => setEmail(e.target.value)}
+                            />
+                        </div>
+                        <div className="grid gap-2">
+                            <Label htmlFor="password">كلمة المرور</Label>
+                            <div className="relative">
+                                <Input
+                                    id="password"
+                                    type={showPassword ? "text" : "password"}
+                                    disabled={isLoading}
+                                    value={password}
+                                    onChange={(e) => setPassword(e.target.value)}
+                                />
+                                <Button
+                                    type="button"
+                                    variant="ghost"
+                                    size="sm"
+                                    className="absolute left-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                                    onClick={() => setShowPassword(!showPassword)}
+                                >
+                                    {showPassword ? (
+                                        <EyeOff className="h-4 w-4 text-muted-foreground" />
+                                    ) : (
+                                        <Eye className="h-4 w-4 text-muted-foreground" />
+                                    )}
+                                </Button>
+                            </div>
+                        </div>
+                        <Button disabled={isLoading}>
+                            {isLoading && (
+                                <Loader2 className="ml-2 h-4 w-4 animate-spin" />
+                            )}
+                            تسجيل الدخول
+                        </Button>
+                    </div>
+                </form>
+                <div className="relative">
+                    <div className="absolute inset-0 flex items-center">
+                        <span className="w-full border-t" />
+                    </div>
+                    <div className="relative flex justify-center text-xs uppercase">
+                        <span className="bg-background px-2 text-muted-foreground">
+                            أو تابع باستخدام
+                        </span>
+                    </div>
+                </div>
+                <Button variant="outline" type="button" disabled={isLoading}>
+                    Google
+                </Button>
+                <p className="px-8 text-center text-xs text-muted-foreground">
+                    ليس لديك حساب؟{" "}
+                    <Link href="/register" className="underline underline-offset-4 hover:text-primary">
+                        إنشاء حساب جديد
+                    </Link>
+                </p>
+            </div>
+        </>
+    )
+}

@@ -195,19 +195,19 @@
   - [ ] Progress charts
   - [ ] Mushaf overlay
 
-### 5. AUDIO SYSTEM
+### 3. AUDIO SYSTEM
 
-#### 5.1 Reciter Library
-- [ ] **Qaris (10+)**
-  - [ ] Mishary Rashid Alafasy
-  - [ ] Abdul Basit Abdul Samad
-  - [ ] Mahmoud Khalil Al-Hussary
-  - [ ] Saad Al-Ghamdi
-  - [ ] Maher Al-Muaiqly
-  - [ ] And more...
-- [ ] **Styles**
-  - [ ] Murattal
-  - [ ] Mujawwad
+#### 3.1 Reciter Library
+- [x] **Qaris (10+)**
+  - [x] Mishary Rashid Alafasy
+  - [x] Abdul Basit Abdul Samad
+  - [x] Mahmoud Khalil Al-Hussary
+  - [x] Saad Al-Ghamdi
+  - [x] Maher Al-Muaiqly
+  - [x] And more (via API)
+- [x] **Styles**
+  - [x] Murattal
+  - [x] Mujawwad
 
 #### 5.2 Player Features
 - [ ] **Controls**

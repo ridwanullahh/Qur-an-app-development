@@ -116,8 +116,12 @@ export default function AudioPlayer({ surahNumber, verseNumber, surahName, onVer
         {/* Hidden audio element */}
         <audio
           ref={audioRef}
+          src={currentTime === 0 && !isPlaying ? "" : audioRef.current?.src || ""}
           onTimeUpdate={(e) => setCurrentTime(e.currentTarget.currentTime)}
-          onLoadedMetadata={(e) => setDuration(e.currentTarget.duration)}
+          onLoadedMetadata={(e) => {
+            setDuration(e.currentTarget.duration)
+            if (isPlaying) e.currentTarget.play()
+          }}
           onEnded={() => {
             if (repeatMode === "verse") {
               audioRef.current?.play()

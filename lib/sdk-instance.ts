@@ -59,6 +59,19 @@ export function getSDK(): UniversalSDK {
             text: "string",
           },
         },
+        memorization_progress: {
+          types: {
+            userId: "string",
+            surahNumber: "number",
+            verseNumber: "number",
+            status: "string", // "new" | "learning" | "review" | "memorized"
+            easeFactor: "number",
+            interval: "number",
+            repetitions: "number",
+            lastReview: "string", // ISO date
+            nextReview: "string", // ISO date
+          },
+        },
         tafseer: {
           types: {
             surahNumber: "number",
@@ -84,6 +97,14 @@ export function getSDK(): UniversalSDK {
             surahNumber: "number",
             verseNumber: "number",
             note: "string",
+          },
+        },
+        sessions: {
+          types: {
+            token: "string",
+            userId: "string",
+            created: "number",
+            expires: "number",
           },
         },
         progress: {
