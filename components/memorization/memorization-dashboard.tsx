@@ -215,7 +215,57 @@ export default function MemorizationDashboard() {
                 تقدم الحفظ الكلي
               </CardTitle>
               <CardDescription>
-                {mockProgress.totalVersesMemorized} من {mockProgress.totalVerses} آية
+                {[
+                  {
+                    "TargetContent": "mockProgress.totalVersesMemorized",
+                    "ReplacementContent": "stats.totalMemorized",
+                    "StartLine": 218,
+                    "EndLine": 218,
+                    "AllowMultiple": true
+                  },
+                  {
+                    "TargetContent": "mockProgress.totalVerses",
+                    "ReplacementContent": "stats.totalVerses",
+                    "StartLine": 218,
+                    "EndLine": 218,
+                    "AllowMultiple": true
+                  },
+                  {
+                    "TargetContent": "mockProgress.dueForReview",
+                    "ReplacementContent": "stats.dueForReview",
+                    "StartLine": 237,
+                    "EndLine": 237,
+                    "AllowMultiple": true
+                  },
+                  {
+                    "TargetContent": "mockProgress.newToday",
+                    "ReplacementContent": "stats.newToday",
+                    "StartLine": 259,
+                    "EndLine": 259,
+                    "AllowMultiple": true
+                  },
+                  {
+                    "TargetContent": "mockProgress.memorizedSurahs",
+                    "ReplacementContent": "memorizedSurahs",
+                    "StartLine": 285,
+                    "EndLine": 285,
+                    "AllowMultiple": true
+                  },
+                  {
+                    "TargetContent": "mockProgress.inProgressSurahs",
+                    "ReplacementContent": "inProgressSurahs",
+                    "StartLine": 286,
+                    "EndLine": 286,
+                    "AllowMultiple": true
+                  },
+                  {
+                    "TargetContent": "mockProgress.weeklyProgress",
+                    "ReplacementContent": "stats.weeklyProgress",
+                    "StartLine": 342,
+                    "EndLine": 342,
+                    "AllowMultiple": true
+                  }
+                ]} من {mockProgress.totalVerses} آية
               </CardDescription>
             </CardHeader>
             <CardContent>
