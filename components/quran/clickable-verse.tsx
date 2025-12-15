@@ -1,14 +1,15 @@
 "use client"
 
 // بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ
-// Clickable Verse Component - Opens Verse Sciences Panel
+// Clickable Verse Component - Opens Verse Sciences Panel with Dynamic Data from API
 
-import { useState, type ReactNode } from "react"
+import { useState, useEffect, type ReactNode } from "react"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Button } from "@/components/ui/button"
 import { ScrollArea } from "@/components/ui/scroll-area"
-import { BookOpen, Languages, Link2, Clock, Volume2, Bookmark, Share2, Copy } from "lucide-react"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { BookOpen, Languages, Link2, Clock, Volume2, Bookmark, Share2, Copy, Loader2 } from "lucide-react"
 import { useI18n, toArabicNumeral } from "@/lib/i18n"
 import { cn } from "@/lib/utils"
 import type { Verse } from "@/lib/quran-verses"
@@ -20,69 +21,136 @@ interface ClickableVerseProps {
   showTajweed?: boolean
 }
 
-// Mock tafsir data - in production from admin API
-const getTafsirData = (surah: number, verse: number, language: string) => ({
-  ibnKathir: {
-    ar: "تفسير ابن كثير للآية...",
-    en: "Ibn Kathir's interpretation of this verse...",
-    ur: "اس آیت کی ابن کثیر کی تفسیر...",
-  },
-  tabari: {
-    ar: "تفسير الطبري للآية...",
-    en: "At-Tabari's interpretation...",
-    ur: "طبری کی تفسیر...",
-  },
-  jalalayn: {
-    ar: "تفسير الجلالين للآية...",
-    en: "Jalalayn interpretation...",
-    ur: "جلالین کی تفسیر...",
-  },
-  qurtubi: {
-    ar: "تفسير القرطبي للآية...",
-    en: "Al-Qurtubi's interpretation...",
-    ur: "قرطبی کی تفسیر...",
-  },
-  sayyidQutb: {
-    ar: "في ظلال القرآن - سيد قطب...",
-    en: "In the Shade of the Quran - Sayyid Qutb...",
-    ur: "سید قطب کی تفسیر...",
-  },
-})
+interface TafsirData {
+  id: string
+  surahNumber: number
+  verseNumber: number
+  language: string
+  text: string
+  scholar: string
+}
 
-const getTranslations = (surah: number, verse: number) => ({
-  sahihInternational: "This is the Sahih International translation of the verse...",
-  pickthall: "This is Pickthall's translation...",
-  yusufAli: "This is Yusuf Ali's translation...",
-  muhsinKhan: "This is Muhsin Khan's translation...",
-  urdu: "اس آیت کا اردو ترجمہ...",
-  french: "Traduction française du verset...",
-  turkish: "Ayetin Türkçe çevirisi...",
-  indonesian: "Terjemahan ayat dalam Bahasa Indonesia...",
-})
+interface TranslationData {
+  id: string
+  surahNumber: number
+  verseNumber: number
+  language: string
+  text: string
+  translator: string
+}
 
-const getRelatedVerses = (surah: number, verse: number) => [
-  { surah: 3, verse: 139, text: "وَلَا تَهِنُوا وَلَا تَحْزَنُوا وَأَنتُمُ الْأَعْلَوْنَ..." },
-  { surah: 2, verse: 286, text: "لَا يُكَلِّفُ اللَّهُ نَفْسًا إِلَّا وُسْعَهَا..." },
-  { surah: 94, verse: 5, text: "فَإِنَّ مَعَ الْعُسْرِ يُسْرًا" },
+// Default scholars and translators for selection (will be populated from API if available)
+const DEFAULT_SCHOLARS = [
+  { id: "ibnKathir", name: "ابن كثير", nameEn: "Ibn Kathir" },
+  { id: "tabari", name: "الطبري", nameEn: "At-Tabari" },
+  { id: "qurtubi", name: "القرطبي", nameEn: "Al-Qurtubi" },
+  { id: "jalalayn", name: "الجلالين", nameEn: "Al-Jalalayn" },
+  { id: "sayyidQutb", name: "سيد قطب", nameEn: "Sayyid Qutb" },
 ]
 
-const getAsbabNuzul = (surah: number, verse: number, language: string) => ({
-  ar: "سبب نزول هذه الآية: ...",
-  en: "The reason for the revelation of this verse: ...",
-  ur: "اس آیت کے نزول کا سبب: ...",
-})
+const DEFAULT_TRANSLATORS = [
+  { id: "sahihInternational", name: "Sahih International", lang: "en" },
+  { id: "pickthall", name: "Pickthall", lang: "en" },
+  { id: "yusufAli", name: "Yusuf Ali", lang: "en" },
+  { id: "urdu", name: "اردو", lang: "ur" },
+  { id: "french", name: "Français", lang: "fr" },
+  { id: "turkish", name: "Türkçe", lang: "tr" },
+  { id: "indonesian", name: "Indonesia", lang: "id" },
+]
 
 export default function ClickableVerse({ verse, children, showTajweed }: ClickableVerseProps) {
   const [isOpen, setIsOpen] = useState(false)
-  const [selectedTafsir, setSelectedTafsir] = useState("ibnKathir")
-  const [selectedTranslation, setSelectedTranslation] = useState("sahihInternational")
+  const [selectedScholar, setSelectedScholar] = useState("ibnKathir")
+  const [selectedTranslator, setSelectedTranslator] = useState("sahihInternational")
   const { t, language } = useI18n()
 
+  // API data states
+  const [tafsirData, setTafsirData] = useState<TafsirData[]>([])
+  const [translationData, setTranslationData] = useState<TranslationData[]>([])
+  const [availableScholars, setAvailableScholars] = useState<string[]>([])
+  const [availableTranslators, setAvailableTranslators] = useState<string[]>([])
+  const [loadingTafsir, setLoadingTafsir] = useState(false)
+  const [loadingTranslation, setLoadingTranslation] = useState(false)
+  const [tafsirError, setTafsirError] = useState<string | null>(null)
+  const [translationError, setTranslationError] = useState<string | null>(null)
+
   const surah = SURAHS.find((s) => s.number === verse.surah)
-  const tafsirData = getTafsirData(verse.surah, verse.verse, language)
-  const translations = getTranslations(verse.surah, verse.verse)
-  const relatedVerses = getRelatedVerses(verse.surah, verse.verse)
-  const asbabNuzul = getAsbabNuzul(verse.surah, verse.verse, language)
+
+  // Fetch tafsir data from API
+  useEffect(() => {
+    if (!isOpen) return
+
+    const fetchTafsir = async () => {
+      setLoadingTafsir(true)
+      setTafsirError(null)
+      try {
+        const res = await fetch(
+          `/api/tafsir?surah=${verse.surah}&verse=${verse.verse}&language=${language}`
+        )
+        const data = await res.json()
+        if (data.tafsir) {
+          setTafsirData(data.tafsir)
+          if (data.availableScholars) {
+            setAvailableScholars(data.availableScholars)
+          }
+        }
+        if (data.message && data.tafsir.length === 0) {
+          setTafsirError(data.message)
+        }
+      } catch (err) {
+        setTafsirError("Failed to load tafsir data")
+        console.error("Tafsir fetch error:", err)
+      } finally {
+        setLoadingTafsir(false)
+      }
+    }
+
+    fetchTafsir()
+  }, [isOpen, verse.surah, verse.verse, language])
+
+  // Fetch translation data from API
+  useEffect(() => {
+    if (!isOpen) return
+
+    const fetchTranslations = async () => {
+      setLoadingTranslation(true)
+      setTranslationError(null)
+      try {
+        const res = await fetch(
+          `/api/translations?surah=${verse.surah}&verse=${verse.verse}&language=${language}`
+        )
+        const data = await res.json()
+        if (data.translations) {
+          setTranslationData(data.translations)
+          if (data.availableTranslators) {
+            setAvailableTranslators(data.availableTranslators)
+          }
+        }
+        if (data.message && data.translations.length === 0) {
+          setTranslationError(data.message)
+        }
+      } catch (err) {
+        setTranslationError("Failed to load translation data")
+        console.error("Translation fetch error:", err)
+      } finally {
+        setLoadingTranslation(false)
+      }
+    }
+
+    fetchTranslations()
+  }, [isOpen, verse.surah, verse.verse, language])
+
+  // Get current tafsir text based on selected scholar
+  const getCurrentTafsir = () => {
+    const found = tafsirData.find((t) => t.scholar === selectedScholar)
+    return found?.text || null
+  }
+
+  // Get current translation text based on selected translator
+  const getCurrentTranslation = () => {
+    const found = translationData.find((t) => t.translator === selectedTranslator)
+    return found?.text || null
+  }
 
   const handleCopy = () => {
     navigator.clipboard.writeText(verse.text)
@@ -98,10 +166,27 @@ export default function ClickableVerse({ verse, children, showTajweed }: Clickab
     }
   }
 
+  // Get scholars to display (from API or defaults)
+  const scholarsToShow = availableScholars.length > 0
+    ? availableScholars.map(s => ({ id: s, name: s, nameEn: s }))
+    : DEFAULT_SCHOLARS
+
+  // Get translators to display (from API or defaults)
+  const translatorsToShow = availableTranslators.length > 0
+    ? availableTranslators.map(t => ({ id: t, name: t, lang: "en" }))
+    : DEFAULT_TRANSLATORS
+
   return (
     <>
       <span
-        onClick={() => setIsOpen(true)}
+        onClick={(e) => {
+          // Only open verse panel if clicking directly on verse area, not on words
+          const target = e.target as HTMLElement
+          if (target.closest('[data-word-interactive="true"]')) {
+            return
+          }
+          setIsOpen(true)
+        }}
         className={cn("inline cursor-pointer transition-colors duration-200", "hover:bg-primary/5 rounded")}
         role="button"
         tabIndex={0}
@@ -166,80 +251,92 @@ export default function ClickableVerse({ verse, children, showTajweed }: Clickab
             <ScrollArea className="h-[50vh] px-6 py-4">
               {/* Tafsir Tab */}
               <TabsContent value="tafsir" className="mt-0 space-y-4">
-                {/* Tafsir selector */}
-                <div className="flex flex-wrap gap-2 pb-3 border-b">
-                  {[
-                    { id: "ibnKathir", name: "ابن كثير" },
-                    { id: "tabari", name: "الطبري" },
-                    { id: "qurtubi", name: "القرطبي" },
-                    { id: "jalalayn", name: "الجلالين" },
-                    { id: "sayyidQutb", name: "سيد قطب" },
-                  ].map((tafsir) => (
-                    <Button
-                      key={tafsir.id}
-                      variant={selectedTafsir === tafsir.id ? "default" : "outline"}
-                      size="sm"
-                      onClick={() => setSelectedTafsir(tafsir.id)}
-                    >
-                      {tafsir.name}
-                    </Button>
-                  ))}
+                {/* Scholar selector using Select for many options */}
+                <div className="flex items-center gap-3 pb-3 border-b">
+                  <span className="text-sm font-medium">{t("sciences.tafsir")}:</span>
+                  <Select value={selectedScholar} onValueChange={setSelectedScholar}>
+                    <SelectTrigger className="w-[200px]">
+                      <SelectValue placeholder="Select Scholar" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {scholarsToShow.map((scholar) => (
+                        <SelectItem key={scholar.id} value={scholar.id}>
+                          {scholar.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
 
-                <div className="p-4 bg-muted/50 rounded-lg font-amiri text-lg leading-relaxed">
-                  {tafsirData[selectedTafsir as keyof typeof tafsirData]?.[language as "ar" | "en" | "ur"] ||
-                    tafsirData[selectedTafsir as keyof typeof tafsirData]?.ar}
+                <div className="p-4 bg-muted/50 rounded-lg font-amiri text-lg leading-relaxed min-h-[100px]">
+                  {loadingTafsir ? (
+                    <div className="flex items-center justify-center py-8">
+                      <Loader2 className="h-6 w-6 animate-spin text-primary" />
+                      <span className="ml-2">جاري التحميل...</span>
+                    </div>
+                  ) : tafsirError && tafsirData.length === 0 ? (
+                    <p className="text-muted-foreground text-center py-4">{tafsirError}</p>
+                  ) : getCurrentTafsir() ? (
+                    getCurrentTafsir()
+                  ) : (
+                    <p className="text-muted-foreground text-center py-4">
+                      لا يوجد تفسير متاح لهذه الآية. يرجى إضافته من لوحة الإدارة.
+                    </p>
+                  )}
                 </div>
               </TabsContent>
 
               {/* Translation Tab */}
               <TabsContent value="translation" className="mt-0 space-y-4">
-                {/* Translation selector */}
-                <div className="flex flex-wrap gap-2 pb-3 border-b">
-                  {[
-                    { id: "sahihInternational", name: "Sahih International" },
-                    { id: "pickthall", name: "Pickthall" },
-                    { id: "yusufAli", name: "Yusuf Ali" },
-                    { id: "urdu", name: "اردو" },
-                    { id: "french", name: "Français" },
-                    { id: "turkish", name: "Türkçe" },
-                    { id: "indonesian", name: "Indonesia" },
-                  ].map((trans) => (
-                    <Button
-                      key={trans.id}
-                      variant={selectedTranslation === trans.id ? "default" : "outline"}
-                      size="sm"
-                      onClick={() => setSelectedTranslation(trans.id)}
-                    >
-                      {trans.name}
-                    </Button>
-                  ))}
+                {/* Translator selector using Select for many options */}
+                <div className="flex items-center gap-3 pb-3 border-b">
+                  <span className="text-sm font-medium">{t("sciences.translation")}:</span>
+                  <Select value={selectedTranslator} onValueChange={setSelectedTranslator}>
+                    <SelectTrigger className="w-[200px]">
+                      <SelectValue placeholder="Select Translator" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {translatorsToShow.map((trans) => (
+                        <SelectItem key={trans.id} value={trans.id}>
+                          {trans.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
 
-                <div className="p-4 bg-muted/50 rounded-lg text-lg leading-relaxed">
-                  {translations[selectedTranslation as keyof typeof translations]}
+                <div className="p-4 bg-muted/50 rounded-lg text-lg leading-relaxed min-h-[100px]">
+                  {loadingTranslation ? (
+                    <div className="flex items-center justify-center py-8">
+                      <Loader2 className="h-6 w-6 animate-spin text-primary" />
+                      <span className="ml-2">Loading...</span>
+                    </div>
+                  ) : translationError && translationData.length === 0 ? (
+                    <p className="text-muted-foreground text-center py-4">{translationError}</p>
+                  ) : getCurrentTranslation() ? (
+                    getCurrentTranslation()
+                  ) : (
+                    <p className="text-muted-foreground text-center py-4">
+                      No translation available for this verse. Please add via admin panel.
+                    </p>
+                  )}
                 </div>
               </TabsContent>
 
-              {/* Related Verses Tab */}
+              {/* Related Verses Tab - Will be populated from DB in future */}
               <TabsContent value="related" className="mt-0 space-y-4">
                 <h4 className="font-bold text-muted-foreground">{t("sciences.related")}</h4>
-                {relatedVerses.map((rv, idx) => (
-                  <div key={idx} className="p-4 bg-muted/50 rounded-lg">
-                    <p className="text-xl font-amiri text-primary mb-2">{rv.text}</p>
-                    <p className="text-sm text-muted-foreground">
-                      سورة {SURAHS.find((s) => s.number === rv.surah)?.nameArabic} - آية {rv.verse}
-                    </p>
-                  </div>
-                ))}
+                <p className="text-muted-foreground text-center py-8">
+                  Related verses will be available once data is added via admin panel.
+                </p>
               </TabsContent>
 
-              {/* Asbab al-Nuzul Tab */}
+              {/* Asbab al-Nuzul Tab - Will be populated from DB in future */}
               <TabsContent value="asbab" className="mt-0 space-y-4">
                 <h4 className="font-bold text-muted-foreground">{t("sciences.reasons")}</h4>
-                <div className="p-4 bg-muted/50 rounded-lg font-amiri text-lg leading-relaxed">
-                  {asbabNuzul[language as keyof typeof asbabNuzul] || asbabNuzul.ar}
-                </div>
+                <p className="text-muted-foreground text-center py-8">
+                  Asbab al-Nuzul (Reasons for Revelation) will be available once data is added via admin panel.
+                </p>
               </TabsContent>
             </ScrollArea>
           </Tabs>

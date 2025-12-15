@@ -107,7 +107,7 @@ export default function MushafPageSpread() {
       {/* Book spine shadow in center */}
       <div className="absolute left-1/2 top-0 bottom-0 w-6 -translate-x-1/2 bg-gradient-to-r from-transparent via-black/15 to-transparent z-10 pointer-events-none" />
 
-      <div className="flex flex-row-reverse gap-0 px-12" dir="rtl">
+      <div className="flex gap-0 px-12" dir="rtl">
         {/* RIGHT Page (Odd number - Page 1, 3, 5, etc.) - This is the FIRST page in RTL */}
         <div
           className={cn(

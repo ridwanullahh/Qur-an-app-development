@@ -111,6 +111,7 @@ export default function ClickableWord({ word, surah, verse, position, showTajwee
           "hover:bg-primary/10 rounded px-0.5",
           isHovered && "scale-105",
         )}
+        data-word-interactive="true"
         role="button"
         tabIndex={0}
         aria-label={`كلمة: ${word}`}

@@ -26,14 +26,18 @@ export default function MushafPageContent({ pageNumber }: MushafPageContentProps
   const dynamicFontSize = useMemo(() => {
     const verseCount = versesOnPage.length
     const totalWords = versesOnPage.reduce((acc, v) => acc + v.text.split(" ").length, 0)
+    const totalChars = versesOnPage.reduce((acc, v) => acc + v.text.length, 0)
 
-    // Base font size adjustments based on content density
-    if (totalWords > 150) return "text-[1.1rem] leading-[2.2]"
-    if (totalWords > 120) return "text-[1.25rem] leading-[2.3]"
-    if (totalWords > 100) return "text-[1.35rem] leading-[2.4]"
-    if (totalWords > 80) return "text-[1.45rem] leading-[2.5]"
-    if (totalWords > 60) return "text-[1.55rem] leading-[2.6]"
-    return "text-[1.65rem] leading-[2.7]"
+    // More aggressive font size adjustments based on total content density
+    // Use smaller base sizes to ensure content fits without scrolling
+    if (totalChars > 800 || totalWords > 180) return "text-[0.85rem] leading-[1.9]"
+    if (totalChars > 700 || totalWords > 150) return "text-[0.95rem] leading-[2.0]"
+    if (totalChars > 600 || totalWords > 120) return "text-[1.05rem] leading-[2.1]"
+    if (totalChars > 500 || totalWords > 100) return "text-[1.15rem] leading-[2.2]"
+    if (totalChars > 400 || totalWords > 80) return "text-[1.25rem] leading-[2.3]"
+    if (totalChars > 300 || totalWords > 60) return "text-[1.35rem] leading-[2.4]"
+    if (totalChars > 200 || totalWords > 40) return "text-[1.45rem] leading-[2.5]"
+    return "text-[1.55rem] leading-[2.6]"
   }, [versesOnPage])
 
   if (versesOnPage.length === 0) {
@@ -60,8 +64,8 @@ export default function MushafPageContent({ pageNumber }: MushafPageContentProps
 
             <div className={`text-justify text-foreground ${dynamicFontSize}`} style={{ textAlignLast: "center" }}>
               {verses.map((verse) => (
-                <ClickableVerse key={`${verse.surah}-${verse.verse}`} verse={verse} showTajweed={settings.wordByWord}>
-                  {renderVerseWithClickableWords(verse, settings.wordByWord)}
+                <ClickableVerse key={`${verse.surah}-${verse.verse}`} verse={verse} showTajweed={true}>
+                  {renderVerseWithClickableWords(verse, true)}
                   <VerseEndMarker verseNumber={verse.verse} />
                 </ClickableVerse>
               ))}
