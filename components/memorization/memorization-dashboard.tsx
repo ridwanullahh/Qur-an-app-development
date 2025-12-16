@@ -215,57 +215,7 @@ export default function MemorizationDashboard() {
                 تقدم الحفظ الكلي
               </CardTitle>
               <CardDescription>
-                {[
-                  {
-                    "TargetContent": "mockProgress.totalVersesMemorized",
-                    "ReplacementContent": "stats.totalMemorized",
-                    "StartLine": 218,
-                    "EndLine": 218,
-                    "AllowMultiple": true
-                  },
-                  {
-                    "TargetContent": "mockProgress.totalVerses",
-                    "ReplacementContent": "stats.totalVerses",
-                    "StartLine": 218,
-                    "EndLine": 218,
-                    "AllowMultiple": true
-                  },
-                  {
-                    "TargetContent": "mockProgress.dueForReview",
-                    "ReplacementContent": "stats.dueForReview",
-                    "StartLine": 237,
-                    "EndLine": 237,
-                    "AllowMultiple": true
-                  },
-                  {
-                    "TargetContent": "mockProgress.newToday",
-                    "ReplacementContent": "stats.newToday",
-                    "StartLine": 259,
-                    "EndLine": 259,
-                    "AllowMultiple": true
-                  },
-                  {
-                    "TargetContent": "mockProgress.memorizedSurahs",
-                    "ReplacementContent": "memorizedSurahs",
-                    "StartLine": 285,
-                    "EndLine": 285,
-                    "AllowMultiple": true
-                  },
-                  {
-                    "TargetContent": "mockProgress.inProgressSurahs",
-                    "ReplacementContent": "inProgressSurahs",
-                    "StartLine": 286,
-                    "EndLine": 286,
-                    "AllowMultiple": true
-                  },
-                  {
-                    "TargetContent": "mockProgress.weeklyProgress",
-                    "ReplacementContent": "stats.weeklyProgress",
-                    "StartLine": 342,
-                    "EndLine": 342,
-                    "AllowMultiple": true
-                  }
-                ]} من {mockProgress.totalVerses} آية
+                {stats.totalMemorized} من {stats.totalVerses} آية
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -284,7 +234,7 @@ export default function MemorizationDashboard() {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-3xl font-bold text-primary">{mockProgress.dueForReview}</p>
+                <p className="text-3xl font-bold text-primary">{stats.dueForReview}</p>
                 <p className="text-sm text-muted-foreground mb-4">آيات تحتاج مراجعة اليوم</p>
                 <Button
                   className="w-full"
@@ -306,7 +256,7 @@ export default function MemorizationDashboard() {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-3xl font-bold text-green-600">{mockProgress.newToday}</p>
+                <p className="text-3xl font-bold text-green-600">{stats.newToday}</p>
                 <p className="text-sm text-muted-foreground mb-4">آيات جديدة اليوم</p>
                 <Button
                   variant="outline"
@@ -332,8 +282,8 @@ export default function MemorizationDashboard() {
             <CardContent>
               <div className="grid gap-2 max-h-[500px] overflow-y-auto">
                 {SURAHS.map((surah) => {
-                  const isMemorized = mockProgress.memorizedSurahs.includes(surah.number)
-                  const isInProgress = mockProgress.inProgressSurahs.includes(surah.number)
+                  const isMemorized = memorizedSurahs.includes(surah.number)
+                  const isInProgress = inProgressSurahs.includes(surah.number)
 
                   return (
                     <Link
@@ -389,7 +339,7 @@ export default function MemorizationDashboard() {
                   <div key={day} className="flex items-center justify-between p-3 rounded-lg bg-muted/50">
                     <span className="font-medium">{day}</span>
                     <div className="flex items-center gap-2">
-                      {index < mockProgress.weeklyProgress ? (
+                      {index < stats.weeklyProgress ? (
                         <CheckCircle2 className="h-5 w-5 text-green-500" />
                       ) : (
                         <div className="h-5 w-5 rounded-full border-2 border-muted-foreground/30" />
