@@ -15,6 +15,22 @@ import { cn } from "@/lib/utils"
 
 export default function AppSidebar() {
   const [isSearchOpen, setIsSearchOpen] = useState(false)
+  const [isCollapsed, setIsCollapsed] = useState(false)
+  const { currentSurah, setCurrentSurah, bookmarks } = useQuran()
+
+  const goToSurah = (surahNumber: number) => {
+    setCurrentSurah(surahNumber)
+  }
+
+  const goToJuz = (juzNumber: number) => {
+    // Logic to go to Juz would potentially set currentSurah to the starting surah of the Juz or similar
+    console.log(`Go to Juz ${juzNumber}`)
+  }
+
+  const goToVerse = (surah: number, verse: number) => {
+    setCurrentSurah(surah)
+    // Additional logic to scroll to verse would go here
+  }
 
   // Keyboard shortcut for search
   useState(() => {
