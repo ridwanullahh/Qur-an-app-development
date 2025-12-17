@@ -59,12 +59,10 @@ export async function POST(request: Request) {
                 note: "To actually execute DB writes, un-comment the write loop in the code."
             })
 
-            /* 
-            // Actual Write Loop (Commented out to prevent accidental massive API calls)
+            // Actual Write Loop
             for (const v of verses) {
-                 await sdk.create("quran_uthmani", v)
+                await sdk.create("quran_uthmani", v)
             }
-            */
         }
 
         return NextResponse.json({ error: "Invalid type" }, { status: 400 })

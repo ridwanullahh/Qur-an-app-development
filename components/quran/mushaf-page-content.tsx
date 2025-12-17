@@ -106,19 +106,24 @@ export default function MushafPageContent({ pageNumber }: MushafPageContentProps
       {pageLines.map((lineContent, lineIndex) => (
         <div
           key={lineIndex}
-          className="mushaf-line flex items-center justify-center text-foreground overflow-hidden"
+          className="mushaf-line w-full flex items-center text-foreground overflow-hidden px-[1px]"
           style={{
             minHeight: 0,
             textAlign: "justify",
-            fontSize: "clamp(0.75rem, 1.8vh, 1.3rem)",
-            lineHeight: 1.6,
+            textAlignLast: lineContent.type === "surahHeader" ? "center" : "justify",
+            fontSize: "clamp(0.9rem, 2.8vh, 1.8rem)",
+            lineHeight: 1.8,
+            width: "100%",
+            direction: "rtl"
           }}
         >
           {lineContent.type === "surahHeader" && lineContent.surah && (
-            <SurahBismillahHeader surah={lineContent.surah} compact />
+            <div className="w-full flex justify-center">
+              <SurahBismillahHeader surah={lineContent.surah} compact />
+            </div>
           )}
           {lineContent.type === "content" && (
-            <span style={{ textAlign: "justify", textAlignLast: "center", width: "100%" }}>
+            <span className="w-full block" style={{ textAlign: "justify", textAlignLast: "justify" }}>
               {lineContent.verses?.map((verse) => (
                 <ClickableVerse key={`${verse.surah}-${verse.verse}`} verse={verse} showTajweed={true}>
                   {renderVerseWithClickableWords(verse, true)}
@@ -127,7 +132,7 @@ export default function MushafPageContent({ pageNumber }: MushafPageContentProps
               ))}
             </span>
           )}
-          {lineContent.type === "empty" && <span>&nbsp;</span>}
+          {lineContent.type === "empty" && <span className="w-full">&nbsp;</span>}
         </div>
       ))}
     </div>

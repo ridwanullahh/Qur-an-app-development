@@ -107,9 +107,9 @@ export default function ClickableWord({ word, surah, verse, position, showTajwee
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
         className={cn(
-          "cursor-pointer transition-all duration-200 inline-block mx-[2px]",
-          "hover:bg-primary/10 rounded px-0.5",
-          isHovered && "scale-105",
+          "cursor-pointer transition-all duration-200 inline",
+          "hover:bg-primary/10 rounded-sm",
+          isHovered && "bg-primary/5",
         )}
         data-word-interactive="true"
         role="button"
