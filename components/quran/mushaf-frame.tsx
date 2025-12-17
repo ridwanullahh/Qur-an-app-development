@@ -58,7 +58,7 @@ export default function MushafFrame({
           </div>
 
           {/* Main content area */}
-          <div className="absolute inset-0 top-12 bottom-10 mx-3 overflow-hidden">{children}</div>
+          <div className="absolute inset-0 top-12 bottom-10 mx-5 overflow-hidden">{children}</div>
 
           {/* Footer - Page number */}
           <div className="absolute bottom-4 left-0 right-0 flex justify-center">
