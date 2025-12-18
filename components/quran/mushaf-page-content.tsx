@@ -106,28 +106,31 @@ export default function MushafPageContent({ pageNumber }: MushafPageContentProps
       {pageLines.map((lineContent, lineIndex) => (
         <div
           key={lineIndex}
-          className="mushaf-line w-full flex items-center text-foreground overflow-hidden px-[1px]"
+          className="mushaf-line w-full text-foreground overflow-hidden px-[1px]"
           style={{
             minHeight: 0,
+            display: "block",
             textAlign: "justify",
             textAlignLast: lineContent.type === "surahHeader" ? "center" : "justify",
-            fontSize: "clamp(0.9rem, 2.8vh, 1.8rem)",
-            lineHeight: 1.8,
+            fontSize: 0,
+            lineHeight: 0,
             width: "100%",
             direction: "rtl"
           }}
         >
           {lineContent.type === "surahHeader" && lineContent.surah && (
-            <div className="w-full flex justify-center">
+            <div className="w-full flex justify-center" style={{ lineHeight: 1.5 }}>
               <SurahBismillahHeader surah={lineContent.surah} compact />
             </div>
           )}
           {lineContent.type === "content" && (
-            <span className="w-full block" style={{ textAlign: "justify", textAlignLast: "justify" }}>
+            <span className="w-full block" style={{ textAlign: "justify", textAlignLast: "justify", fontSize: 0, lineHeight: 0 }}>
               {lineContent.verses?.map((verse) => (
                 <ClickableVerse key={`${verse.surah}-${verse.verse}`} verse={verse} showTajweed={true}>
                   {renderVerseWithClickableWords(verse, true)}
-                  <VerseEndMarker verseNumber={verse.verse} />
+                  <span style={{ fontSize: "clamp(0.9rem, 2.8vh, 1.8rem)", lineHeight: 1.8, display: "inline-block", verticalAlign: "middle" }}>
+                    <VerseEndMarker verseNumber={verse.verse} />
+                  </span>
                 </ClickableVerse>
               ))}
             </span>

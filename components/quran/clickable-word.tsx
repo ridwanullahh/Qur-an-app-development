@@ -107,10 +107,16 @@ export default function ClickableWord({ word, surah, verse, position, showTajwee
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
         className={cn(
-          "cursor-pointer transition-all duration-200 inline",
+          "cursor-pointer transition-all duration-200 inline-block",
           "hover:bg-primary/10 rounded-sm",
           isHovered && "bg-primary/5",
         )}
+        style={{
+          fontSize: "clamp(0.9rem, 2.8vh, 1.8rem)", // Restore font size
+          lineHeight: 1.8,
+          display: "inline-block",
+          // Eliminate whitespace manually if needed, but flex/inline-block with 0 parent handles it
+        }}
         data-word-interactive="true"
         role="button"
         tabIndex={0}
