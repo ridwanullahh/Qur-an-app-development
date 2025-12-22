@@ -11,7 +11,7 @@ import { Button } from "@/components/ui/button"
 import { useQuran } from "@/contexts/quran-context"
 import { useI18n } from "@/lib/i18n"
 import MushafFrame from "./mushaf-frame"
-import MushafPageContent from "./mushaf-page-content"
+import QulMushafPage from "./qul-mushaf-page"
 import { cn } from "@/lib/utils"
 
 export default function MushafPageSpread() {
@@ -122,7 +122,7 @@ export default function MushafPageSpread() {
             surahName={surahInfo?.nameArabic ? `سورة ${surahInfo.nameArabic}` : ""}
             isLeftPage={false}
           >
-            <MushafPageContent pageNumber={rightPageNum} />
+            <QulMushafPage pageNumber={rightPageNum} />
           </MushafFrame>
         </div>
 
@@ -140,7 +140,7 @@ export default function MushafPageSpread() {
             surahName={surahInfo?.nameArabic ? `سورة ${surahInfo.nameArabic}` : ""}
             isLeftPage={true}
           >
-            <MushafPageContent pageNumber={leftPageNum} />
+            <QulMushafPage pageNumber={leftPageNum} />
           </MushafFrame>
         </div>
       </div>

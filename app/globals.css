@@ -1,6 +1,13 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 
+/* Uthmanic Hafs Font - QUL Tarteel */
+@font-face {
+  font-family: 'qpc-hafs';
+  src: url('/fonts/UthmanicHafs_V22.ttf') format('truetype');
+  font-display: swap;
+}
+
 @custom-variant dark (&:is(.dark *));
 
 :root {
@@ -101,6 +108,7 @@
   --font-serif: "Amiri", "Noto Sans Arabic", "Traditional Arabic", serif;
   --font-amiri: "Amiri", serif;
   --font-arabic: "Noto Sans Arabic", "Amiri", serif;
+  --font-qpc-hafs: "qpc-hafs", "Amiri", serif;
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-card: var(--card);
