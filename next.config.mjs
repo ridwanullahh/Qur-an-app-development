@@ -6,6 +6,16 @@ const nextConfig = {
   images: {
     unoptimized: true,
   },
+  // Turbopack configuration for sql.js
+  experimental: {
+    turbo: {
+      resolveAlias: {
+        fs: { browser: false },
+        path: { browser: false },
+        crypto: { browser: false },
+      },
+    },
+  },
   webpack: (config, { isServer }) => {
     if (!isServer) {
       config.resolve.fallback = {
