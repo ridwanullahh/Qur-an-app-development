@@ -6,9 +6,9 @@
  * 
  * This module provides client-side SQLite access for fully offline
  * Mushaf rendering using QUL data (script, layout, surah names).
+ * 
+ * NOTE: Uses dynamic import to avoid bundler issues with Node.js modules
  */
-
-import initSqlJs, { Database } from 'sql.js';
 
 // Database file paths
 const DB_PATHS = {
@@ -17,21 +17,32 @@ const DB_PATHS = {
     surahNames: '/data/surah-names.db',
 };
 
+// Type for sql.js Database (defined here to avoid import)
+interface SqlJsDatabase {
+    exec: (sql: string) => { columns: string[]; values: any[][] }[];
+    close: () => void;
+}
+
 // Cached database instances
-let scriptDb: Database | null = null;
-let layoutDb: Database | null = null;
-let surahNamesDb: Database | null = null;
+let scriptDb: SqlJsDatabase | null = null;
+let layoutDb: SqlJsDatabase | null = null;
+let surahNamesDb: SqlJsDatabase | null = null;
 let sqlPromise: Promise<any> | null = null;
 
 /**
- * Initialize sql.js WASM
+ * Initialize sql.js WASM using dynamic import
+ * This prevents Turbopack from trying to bundle sql.js at build time
  */
 async function initSql() {
     if (!sqlPromise) {
-        sqlPromise = initSqlJs({
-            // Load WASM from CDN (can also be self-hosted in public folder)
-            locateFile: (file: string) => `https://sql.js.org/dist/${file}`,
-        });
+        sqlPromise = (async () => {
+            // Dynamic import - only loads at runtime in browser
+            const initSqlJs = (await import('sql.js')).default;
+            return initSqlJs({
+                // Load WASM from CDN
+                locateFile: (file: string) => `https://sql.js.org/dist/${file}`,
+            });
+        })();
     }
     return sqlPromise;
 }
@@ -39,7 +50,7 @@ async function initSql() {
 /**
  * Load a SQLite database from URL
  */
-async function loadDatabase(url: string): Promise<Database> {
+async function loadDatabase(url: string): Promise<SqlJsDatabase> {
     const SQL = await initSql();
     const response = await fetch(url);
     const buffer = await response.arrayBuffer();
@@ -49,7 +60,7 @@ async function loadDatabase(url: string): Promise<Database> {
 /**
  * Get the script database (words table)
  */
-async function getScriptDb(): Promise<Database> {
+async function getScriptDb(): Promise<SqlJsDatabase> {
     if (!scriptDb) {
         scriptDb = await loadDatabase(DB_PATHS.script);
     }
@@ -59,7 +70,7 @@ async function getScriptDb(): Promise<Database> {
 /**
  * Get the layout database (pages table)
  */
-async function getLayoutDb(): Promise<Database> {
+async function getLayoutDb(): Promise<SqlJsDatabase> {
     if (!layoutDb) {
         layoutDb = await loadDatabase(DB_PATHS.layout);
     }
@@ -69,7 +80,7 @@ async function getLayoutDb(): Promise<Database> {
 /**
  * Get the surah names database
  */
-async function getSurahNamesDb(): Promise<Database> {
+async function getSurahNamesDb(): Promise<SqlJsDatabase> {
     if (!surahNamesDb) {
         surahNamesDb = await loadDatabase(DB_PATHS.surahNames);
     }
@@ -177,10 +188,7 @@ export async function getSurahName(surahNumber: number): Promise<string> {
         return result[0].values[0][0] as string;
     }
 
-    // Fallback - try 'name' column from any table
-    const fallback = db.exec(`SELECT * FROM sqlite_master WHERE type='table'`);
-    console.log('Available tables:', fallback);
-
+    // Fallback
     return `سورة ${surahNumber}`;
 }
 
