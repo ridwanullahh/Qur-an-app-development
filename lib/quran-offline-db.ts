@@ -7,7 +7,8 @@
  * This module provides client-side SQLite access for fully offline
  * Mushaf rendering using QUL data (script, layout, surah names).
  * 
- * NOTE: Uses dynamic import to avoid bundler issues with Node.js modules
+ * NOTE: sql.js is loaded via CDN script tag to bypass Turbopack bundling issues.
+ * The script is loaded dynamically at runtime only in the browser.
  */
 
 // Database file paths
@@ -17,7 +18,7 @@ const DB_PATHS = {
     surahNames: '/data/surah-names.db',
 };
 
-// Type for sql.js Database (defined here to avoid import)
+// Type for sql.js Database
 interface SqlJsDatabase {
     exec: (sql: string) => { columns: string[]; values: any[][] }[];
     close: () => void;
@@ -29,17 +30,56 @@ let layoutDb: SqlJsDatabase | null = null;
 let surahNamesDb: SqlJsDatabase | null = null;
 let sqlPromise: Promise<any> | null = null;
 
+// Declare global initSqlJs that will be loaded from CDN
+declare global {
+    interface Window {
+        initSqlJs?: (config?: { locateFile?: (file: string) => string }) => Promise<any>;
+    }
+}
+
 /**
- * Initialize sql.js WASM using dynamic import
- * This prevents Turbopack from trying to bundle sql.js at build time
+ * Load sql.js from CDN via script tag
+ * This completely bypasses the bundler
+ */
+function loadSqlJsScript(): Promise<void> {
+    return new Promise((resolve, reject) => {
+        // Check if already loaded
+        if (typeof window !== 'undefined' && window.initSqlJs) {
+            resolve();
+            return;
+        }
+
+        // Only run in browser
+        if (typeof window === 'undefined') {
+            reject(new Error('sql.js can only run in browser'));
+            return;
+        }
+
+        // Create script tag
+        const script = document.createElement('script');
+        script.src = 'https://sql.js.org/dist/sql-wasm.js';
+        script.async = true;
+        script.onload = () => resolve();
+        script.onerror = () => reject(new Error('Failed to load sql.js'));
+        document.head.appendChild(script);
+    });
+}
+
+/**
+ * Initialize sql.js WASM
  */
 async function initSql() {
     if (!sqlPromise) {
         sqlPromise = (async () => {
-            // Dynamic import - only loads at runtime in browser
-            const initSqlJs = (await import('sql.js')).default;
-            return initSqlJs({
-                // Load WASM from CDN
+            // Load sql.js from CDN
+            await loadSqlJsScript();
+
+            // Initialize with WASM location
+            if (!window.initSqlJs) {
+                throw new Error('sql.js not loaded');
+            }
+
+            return window.initSqlJs({
                 locateFile: (file: string) => `https://sql.js.org/dist/${file}`,
             });
         })();
@@ -177,7 +217,6 @@ export async function getLineText(firstWordId: number, lastWordId: number): Prom
  */
 export async function getSurahName(surahNumber: number): Promise<string> {
     const db = await getSurahNamesDb();
-    // Try different possible column names
     const result = db.exec(`
     SELECT name FROM surahs WHERE id = ${surahNumber}
     UNION
@@ -188,7 +227,6 @@ export async function getSurahName(surahNumber: number): Promise<string> {
         return result[0].values[0][0] as string;
     }
 
-    // Fallback
     return `سورة ${surahNumber}`;
 }
 
