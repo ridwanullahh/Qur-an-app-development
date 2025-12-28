@@ -8,8 +8,7 @@
  * Mushaf rendering using QUL data (script, layout, surah names).
  * 
  * OFFLINE-FIRST: sql.js is loaded from local /js/ folder
- * User needs to download sql-wasm.js and sql-wasm.wasm from:
- * https://github.com/sql-js/sql.js/releases
+ * All queries use dynamic schema discovery to handle different column names
  */
 
 // Database file paths
@@ -21,7 +20,6 @@ const DB_PATHS = {
 
 // sql.js WASM paths (locally hosted for offline-first)
 const SQL_JS_PATH = '/js/sql-wasm.js';
-const SQL_WASM_PATH = '/js/sql-wasm.wasm';
 
 // Type for sql.js Database
 interface SqlJsDatabase {
@@ -35,10 +33,12 @@ let layoutDb: SqlJsDatabase | null = null;
 let surahNamesDb: SqlJsDatabase | null = null;
 let sqlPromise: Promise<any> | null = null;
 
-// Cache for surah names (loaded once)
+// Schema caches
 let surahNamesCache: Record<number, string> | null = null;
+let wordsSchema: { tableName: string; idCol: string; textCol: string } | null = null;
+let pagesSchema: { tableName: string; columns: string[] } | null = null;
 
-// Declare global initSqlJs that will be loaded from script
+// Declare global initSqlJs
 declare global {
     interface Window {
         initSqlJs?: (config?: { locateFile?: (file: string) => string }) => Promise<any>;
@@ -47,30 +47,25 @@ declare global {
 
 /**
  * Load sql.js from local script (offline-first)
- * Falls back to CDN if local file not found
  */
 function loadSqlJsScript(): Promise<void> {
     return new Promise((resolve, reject) => {
-        // Check if already loaded
         if (typeof window !== 'undefined' && window.initSqlJs) {
             resolve();
             return;
         }
 
-        // Only run in browser
         if (typeof window === 'undefined') {
             reject(new Error('sql.js can only run in browser'));
             return;
         }
 
-        // Create script tag for local file
         const script = document.createElement('script');
         script.src = SQL_JS_PATH;
         script.async = true;
 
         script.onload = () => resolve();
         script.onerror = () => {
-            // Fallback to CDN if local file not found
             console.warn('Local sql.js not found, falling back to CDN');
             const cdnScript = document.createElement('script');
             cdnScript.src = 'https://sql.js.org/dist/sql-wasm.js';
@@ -97,9 +92,7 @@ async function initSql() {
             }
 
             return window.initSqlJs({
-                // Try local first, CDN fallback handled by fetch
                 locateFile: (file: string) => {
-                    // Check if we loaded from CDN
                     if (document.querySelector(`script[src*="sql.js.org"]`)) {
                         return `https://sql.js.org/dist/${file}`;
                     }
@@ -124,9 +117,6 @@ async function loadDatabase(url: string): Promise<SqlJsDatabase> {
     return new SQL.Database(new Uint8Array(buffer));
 }
 
-/**
- * Get the script database (words table)
- */
 async function getScriptDb(): Promise<SqlJsDatabase> {
     if (!scriptDb) {
         scriptDb = await loadDatabase(DB_PATHS.script);
@@ -134,9 +124,6 @@ async function getScriptDb(): Promise<SqlJsDatabase> {
     return scriptDb;
 }
 
-/**
- * Get the layout database (pages table)
- */
 async function getLayoutDb(): Promise<SqlJsDatabase> {
     if (!layoutDb) {
         layoutDb = await loadDatabase(DB_PATHS.layout);
@@ -144,9 +131,6 @@ async function getLayoutDb(): Promise<SqlJsDatabase> {
     return layoutDb;
 }
 
-/**
- * Get the surah names database
- */
 async function getSurahNamesDb(): Promise<SqlJsDatabase> {
     if (!surahNamesDb) {
         surahNamesDb = await loadDatabase(DB_PATHS.surahNames);
@@ -154,7 +138,7 @@ async function getSurahNamesDb(): Promise<SqlJsDatabase> {
     return surahNamesDb;
 }
 
-// Types based on QUL schema
+// Types
 export interface PageLine {
     page_number: number;
     line_number: number;
@@ -166,43 +150,100 @@ export interface PageLine {
 }
 
 export interface Word {
-    word_index: number;
+    id: number;
     word_key: string;
     surah: number;
     ayah: number;
     text: string;
 }
 
-export interface SurahName {
-    id: number;
-    name: string;
-    name_ar?: string;
+/**
+ * Discover schema for words table
+ */
+async function discoverWordsSchema(): Promise<{ tableName: string; idCol: string; textCol: string }> {
+    if (wordsSchema) return wordsSchema;
+
+    const db = await getScriptDb();
+
+    // Find table name
+    const tables = db.exec(`SELECT name FROM sqlite_master WHERE type='table'`);
+    const tableName = tables[0]?.values[0]?.[0] as string || 'words';
+    console.log('Words table name:', tableName);
+
+    // Get columns
+    const tableInfo = db.exec(`PRAGMA table_info(${tableName})`);
+    const columns = tableInfo[0]?.values.map(row => row[1] as string) || [];
+    console.log('Words table columns:', columns);
+
+    // Find ID column (word_index, id, word_id, etc.)
+    let idCol = 'id';
+    for (const candidate of ['word_index', 'id', 'word_id', 'index', 'rowid']) {
+        if (columns.includes(candidate)) {
+            idCol = candidate;
+            break;
+        }
+    }
+
+    // Find text column
+    let textCol = 'text';
+    for (const candidate of ['text', 'text_uthmani', 'word_text', 'code_v4']) {
+        if (columns.includes(candidate)) {
+            textCol = candidate;
+            break;
+        }
+    }
+
+    wordsSchema = { tableName, idCol, textCol };
+    return wordsSchema;
+}
+
+/**
+ * Discover schema for pages table
+ */
+async function discoverPagesSchema(): Promise<{ tableName: string; columns: string[] }> {
+    if (pagesSchema) return pagesSchema;
+
+    const db = await getLayoutDb();
+
+    // Find table name
+    const tables = db.exec(`SELECT name FROM sqlite_master WHERE type='table'`);
+    const tableName = tables[0]?.values[0]?.[0] as string || 'pages';
+    console.log('Pages table name:', tableName);
+
+    // Get columns
+    const tableInfo = db.exec(`PRAGMA table_info(${tableName})`);
+    const columns = tableInfo[0]?.values.map(row => row[1] as string) || [];
+    console.log('Pages table columns:', columns);
+
+    pagesSchema = { tableName, columns };
+    return pagesSchema;
 }
 
 /**
  * Get page layout data for a specific page number
  */
 export async function getPageLayout(pageNumber: number): Promise<PageLine[]> {
+    const schema = await discoverPagesSchema();
     const db = await getLayoutDb();
-    const result = db.exec(`
-    SELECT page_number, line_number, line_type, is_centered, first_word_id, last_word_id, surah_number
-    FROM pages
-    WHERE page_number = ${pageNumber}
-    ORDER BY line_number
-  `);
+
+    // Build query dynamically based on available columns
+    const cols = schema.columns;
+    const result = db.exec(`SELECT * FROM ${schema.tableName} WHERE page_number = ${pageNumber} ORDER BY line_number`);
 
     if (!result.length || !result[0].values.length) {
         return [];
     }
 
+    const colIndex = (name: string) => result[0].columns.indexOf(name);
+
     return result[0].values.map((row: any[]) => ({
-        page_number: row[0] as number,
-        line_number: row[1] as number,
-        line_type: row[2] as 'ayah' | 'surah_name' | 'basmallah',
-        is_centered: Boolean(row[3]),
-        first_word_id: row[4] as number | null,
-        last_word_id: row[5] as number | null,
-        surah_number: row[6] as number | null,
+        page_number: row[colIndex('page_number')] as number,
+        line_number: row[colIndex('line_number')] as number,
+        line_type: row[colIndex('line_type')] as 'ayah' | 'surah_name' | 'basmallah',
+        is_centered: Boolean(row[colIndex('is_centered')]),
+        first_word_id: row[colIndex('first_word_id')] as number | null,
+        last_word_id: row[colIndex('last_word_id')] as number | null,
+        surah_number: row[colIndex('surah_number')] as number | null,
     }));
 }
 
@@ -210,25 +251,42 @@ export async function getPageLayout(pageNumber: number): Promise<PageLine[]> {
  * Get words by ID range
  */
 export async function getWords(firstWordId: number, lastWordId: number): Promise<Word[]> {
+    const schema = await discoverWordsSchema();
     const db = await getScriptDb();
+
     const result = db.exec(`
-    SELECT word_index, word_key, surah, ayah, text
-    FROM words
-    WHERE word_index >= ${firstWordId} AND word_index <= ${lastWordId}
-    ORDER BY word_index
+    SELECT * FROM ${schema.tableName}
+    WHERE ${schema.idCol} >= ${firstWordId} AND ${schema.idCol} <= ${lastWordId}
+    ORDER BY ${schema.idCol}
   `);
 
     if (!result.length || !result[0].values.length) {
         return [];
     }
 
-    return result[0].values.map((row: any[]) => ({
-        word_index: row[0] as number,
-        word_key: row[1] as string,
-        surah: row[2] as number,
-        ayah: row[3] as number,
-        text: row[4] as string,
-    }));
+    const colIndex = (name: string) => {
+        const idx = result[0].columns.indexOf(name);
+        return idx >= 0 ? idx : result[0].columns.indexOf(schema.idCol);
+    };
+
+    return result[0].values.map((row: any[]) => {
+        // Find the ID column index
+        const idIdx = result[0].columns.indexOf(schema.idCol);
+        const textIdx = result[0].columns.indexOf(schema.textCol);
+
+        // Try to find other columns or use defaults
+        const wordKeyIdx = result[0].columns.indexOf('word_key');
+        const surahIdx = result[0].columns.indexOf('surah');
+        const ayahIdx = result[0].columns.indexOf('ayah');
+
+        return {
+            id: row[idIdx] as number,
+            word_key: wordKeyIdx >= 0 ? (row[wordKeyIdx] as string) : `${row[surahIdx] || 1}:${row[ayahIdx] || 1}`,
+            surah: surahIdx >= 0 ? (row[surahIdx] as number) : 1,
+            ayah: ayahIdx >= 0 ? (row[ayahIdx] as number) : 1,
+            text: row[textIdx] as string,
+        };
+    });
 }
 
 /**
@@ -241,14 +299,12 @@ export async function getLineText(firstWordId: number, lastWordId: number): Prom
 
 /**
  * Load all surah names into cache
- * Dynamically discovers the table name and column names
  */
 async function loadSurahNamesCache(): Promise<Record<number, string>> {
     if (surahNamesCache) return surahNamesCache;
 
     const db = await getSurahNamesDb();
 
-    // Discover table names
     const tables = db.exec(`SELECT name FROM sqlite_master WHERE type='table'`);
     if (!tables.length || !tables[0].values.length) {
         console.error('No tables found in surah names database');
@@ -259,29 +315,16 @@ async function loadSurahNamesCache(): Promise<Record<number, string>> {
     const tableName = tables[0].values[0][0] as string;
     console.log('Found surah table:', tableName);
 
-    // Get table info to find columns
     const tableInfo = db.exec(`PRAGMA table_info(${tableName})`);
     const columns = tableInfo[0]?.values.map(row => row[1] as string) || [];
     console.log('Surah table columns:', columns);
 
     // Find the best column for Arabic name
-    let nameColumn = 'name_arabic';
-    if (columns.includes('name_arabic')) {
-        nameColumn = 'name_arabic';
-    } else if (columns.includes('name_ar')) {
-        nameColumn = 'name_ar';
-    } else if (columns.includes('name')) {
-        nameColumn = 'name';
-    }
+    let nameColumn = columns.find(c => ['name_arabic', 'name_ar'].includes(c)) || 'name';
 
-    // Find id/number column
-    let idColumn = 'id';
-    if (!columns.includes('id')) {
-        if (columns.includes('surah_number')) idColumn = 'surah_number';
-        else if (columns.includes('number')) idColumn = 'number';
-    }
+    // Find id column
+    let idColumn = columns.find(c => ['id', 'surah_number', 'number'].includes(c)) || columns[0];
 
-    // Load all surah names
     const result = db.exec(`SELECT ${idColumn}, ${nameColumn} FROM ${tableName}`);
 
     surahNamesCache = {};
@@ -306,24 +349,25 @@ export async function getSurahName(surahNumber: number): Promise<string> {
  * Get total page count
  */
 export async function getTotalPages(): Promise<number> {
+    const schema = await discoverPagesSchema();
     const db = await getLayoutDb();
-    const result = db.exec(`SELECT MAX(page_number) FROM pages`);
+    const result = db.exec(`SELECT MAX(page_number) FROM ${schema.tableName}`);
 
     if (result.length && result[0].values.length) {
         return result[0].values[0][0] as number;
     }
 
-    return 604; // Default for QPC V4
+    return 604;
 }
 
 /**
- * Pre-load all databases for faster subsequent access
+ * Pre-load all databases
  */
 export async function preloadDatabases(): Promise<void> {
     await Promise.all([
-        getScriptDb(),
-        getLayoutDb(),
-        loadSurahNamesCache(), // This also loads surahNamesDb
+        discoverWordsSchema(),
+        discoverPagesSchema(),
+        loadSurahNamesCache(),
     ]);
 }
 
@@ -331,17 +375,10 @@ export async function preloadDatabases(): Promise<void> {
  * Clean up database connections
  */
 export function closeDatabases(): void {
-    if (scriptDb) {
-        scriptDb.close();
-        scriptDb = null;
-    }
-    if (layoutDb) {
-        layoutDb.close();
-        layoutDb = null;
-    }
-    if (surahNamesDb) {
-        surahNamesDb.close();
-        surahNamesDb = null;
-    }
+    if (scriptDb) { scriptDb.close(); scriptDb = null; }
+    if (layoutDb) { layoutDb.close(); layoutDb = null; }
+    if (surahNamesDb) { surahNamesDb.close(); surahNamesDb = null; }
     surahNamesCache = null;
+    wordsSchema = null;
+    pagesSchema = null;
 }
