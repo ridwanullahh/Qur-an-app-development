@@ -7,8 +7,9 @@
  * This module provides client-side SQLite access for fully offline
  * Mushaf rendering using QUL data (script, layout, surah names).
  * 
- * NOTE: sql.js is loaded via CDN script tag to bypass Turbopack bundling issues.
- * The script is loaded dynamically at runtime only in the browser.
+ * OFFLINE-FIRST: sql.js is loaded from local /js/ folder
+ * User needs to download sql-wasm.js and sql-wasm.wasm from:
+ * https://github.com/sql-js/sql.js/releases
  */
 
 // Database file paths
@@ -17,6 +18,10 @@ const DB_PATHS = {
     layout: '/data/qpc-v4-tajweed-15-lines.db',
     surahNames: '/data/surah-names.db',
 };
+
+// sql.js WASM paths (locally hosted for offline-first)
+const SQL_JS_PATH = '/js/sql-wasm.js';
+const SQL_WASM_PATH = '/js/sql-wasm.wasm';
 
 // Type for sql.js Database
 interface SqlJsDatabase {
@@ -30,7 +35,10 @@ let layoutDb: SqlJsDatabase | null = null;
 let surahNamesDb: SqlJsDatabase | null = null;
 let sqlPromise: Promise<any> | null = null;
 
-// Declare global initSqlJs that will be loaded from CDN
+// Cache for surah names (loaded once)
+let surahNamesCache: Record<number, string> | null = null;
+
+// Declare global initSqlJs that will be loaded from script
 declare global {
     interface Window {
         initSqlJs?: (config?: { locateFile?: (file: string) => string }) => Promise<any>;
@@ -38,8 +46,8 @@ declare global {
 }
 
 /**
- * Load sql.js from CDN via script tag
- * This completely bypasses the bundler
+ * Load sql.js from local script (offline-first)
+ * Falls back to CDN if local file not found
  */
 function loadSqlJsScript(): Promise<void> {
     return new Promise((resolve, reject) => {
@@ -55,12 +63,23 @@ function loadSqlJsScript(): Promise<void> {
             return;
         }
 
-        // Create script tag
+        // Create script tag for local file
         const script = document.createElement('script');
-        script.src = 'https://sql.js.org/dist/sql-wasm.js';
+        script.src = SQL_JS_PATH;
         script.async = true;
+
         script.onload = () => resolve();
-        script.onerror = () => reject(new Error('Failed to load sql.js'));
+        script.onerror = () => {
+            // Fallback to CDN if local file not found
+            console.warn('Local sql.js not found, falling back to CDN');
+            const cdnScript = document.createElement('script');
+            cdnScript.src = 'https://sql.js.org/dist/sql-wasm.js';
+            cdnScript.async = true;
+            cdnScript.onload = () => resolve();
+            cdnScript.onerror = () => reject(new Error('Failed to load sql.js'));
+            document.head.appendChild(cdnScript);
+        };
+
         document.head.appendChild(script);
     });
 }
@@ -71,16 +90,21 @@ function loadSqlJsScript(): Promise<void> {
 async function initSql() {
     if (!sqlPromise) {
         sqlPromise = (async () => {
-            // Load sql.js from CDN
             await loadSqlJsScript();
 
-            // Initialize with WASM location
             if (!window.initSqlJs) {
                 throw new Error('sql.js not loaded');
             }
 
             return window.initSqlJs({
-                locateFile: (file: string) => `https://sql.js.org/dist/${file}`,
+                // Try local first, CDN fallback handled by fetch
+                locateFile: (file: string) => {
+                    // Check if we loaded from CDN
+                    if (document.querySelector(`script[src*="sql.js.org"]`)) {
+                        return `https://sql.js.org/dist/${file}`;
+                    }
+                    return `/js/${file}`;
+                },
             });
         })();
     }
@@ -93,6 +117,9 @@ async function initSql() {
 async function loadDatabase(url: string): Promise<SqlJsDatabase> {
     const SQL = await initSql();
     const response = await fetch(url);
+    if (!response.ok) {
+        throw new Error(`Failed to load database: ${url}`);
+    }
     const buffer = await response.arrayBuffer();
     return new SQL.Database(new Uint8Array(buffer));
 }
@@ -213,21 +240,66 @@ export async function getLineText(firstWordId: number, lastWordId: number): Prom
 }
 
 /**
+ * Load all surah names into cache
+ * Dynamically discovers the table name and column names
+ */
+async function loadSurahNamesCache(): Promise<Record<number, string>> {
+    if (surahNamesCache) return surahNamesCache;
+
+    const db = await getSurahNamesDb();
+
+    // Discover table names
+    const tables = db.exec(`SELECT name FROM sqlite_master WHERE type='table'`);
+    if (!tables.length || !tables[0].values.length) {
+        console.error('No tables found in surah names database');
+        surahNamesCache = {};
+        return surahNamesCache;
+    }
+
+    const tableName = tables[0].values[0][0] as string;
+    console.log('Found surah table:', tableName);
+
+    // Get table info to find columns
+    const tableInfo = db.exec(`PRAGMA table_info(${tableName})`);
+    const columns = tableInfo[0]?.values.map(row => row[1] as string) || [];
+    console.log('Surah table columns:', columns);
+
+    // Find the best column for Arabic name
+    let nameColumn = 'name_arabic';
+    if (columns.includes('name_arabic')) {
+        nameColumn = 'name_arabic';
+    } else if (columns.includes('name_ar')) {
+        nameColumn = 'name_ar';
+    } else if (columns.includes('name')) {
+        nameColumn = 'name';
+    }
+
+    // Find id/number column
+    let idColumn = 'id';
+    if (!columns.includes('id')) {
+        if (columns.includes('surah_number')) idColumn = 'surah_number';
+        else if (columns.includes('number')) idColumn = 'number';
+    }
+
+    // Load all surah names
+    const result = db.exec(`SELECT ${idColumn}, ${nameColumn} FROM ${tableName}`);
+
+    surahNamesCache = {};
+    if (result.length && result[0].values.length) {
+        for (const row of result[0].values) {
+            surahNamesCache[row[0] as number] = row[1] as string;
+        }
+    }
+
+    return surahNamesCache;
+}
+
+/**
  * Get surah name by number
  */
 export async function getSurahName(surahNumber: number): Promise<string> {
-    const db = await getSurahNamesDb();
-    const result = db.exec(`
-    SELECT name FROM surahs WHERE id = ${surahNumber}
-    UNION
-    SELECT name_ar FROM surahs WHERE id = ${surahNumber}
-  `);
-
-    if (result.length && result[0].values.length) {
-        return result[0].values[0][0] as string;
-    }
-
-    return `سورة ${surahNumber}`;
+    const cache = await loadSurahNamesCache();
+    return cache[surahNumber] || `سورة ${surahNumber}`;
 }
 
 /**
@@ -251,7 +323,7 @@ export async function preloadDatabases(): Promise<void> {
     await Promise.all([
         getScriptDb(),
         getLayoutDb(),
-        getSurahNamesDb(),
+        loadSurahNamesCache(), // This also loads surahNamesDb
     ]);
 }
 
@@ -271,4 +343,5 @@ export function closeDatabases(): void {
         surahNamesDb.close();
         surahNamesDb = null;
     }
+    surahNamesCache = null;
 }
