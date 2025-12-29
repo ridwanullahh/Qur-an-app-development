@@ -124,7 +124,7 @@ export function QulMushafPage({ pageNumber, className }: QulMushafPageProps) {
                 className
             )}
             style={{
-                fontFamily: "var(--font-qpc-hafs)",
+                fontFamily: "'qpc-hafs', serif",
                 direction: "rtl",
             }}
             dir="rtl"
