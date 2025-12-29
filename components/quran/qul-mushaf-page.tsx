@@ -187,6 +187,7 @@ function AyahLine({ words, isCentered }: { words: Word[]; isCentered: boolean })
         <div
             className="ayah-qul w-full"
             style={{
+                fontFamily: "'qpc-hafs', serif",
                 textAlign: isCentered ? 'center' : 'justify',
                 textAlignLast: isCentered ? 'center' : 'justify',
                 // Whitespace fix from QUL guide
@@ -199,7 +200,8 @@ function AyahLine({ words, isCentered }: { words: Word[]; isCentered: boolean })
                     key={`${word.word_key}-${idx}`}
                     className="qul-word cursor-pointer hover:bg-primary/10 rounded-sm transition-colors"
                     style={{
-                        fontSize: 'clamp(1rem, 3vh, 1.8rem)',
+                        fontFamily: "'qpc-hafs', serif",
+                        fontSize: 'clamp(1.2rem, 4vh, 2.2rem)',
                         lineHeight: 1.8,
                         display: 'inline-block',
                     }}

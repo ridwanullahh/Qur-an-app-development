@@ -4,7 +4,8 @@
 /* Uthmanic Hafs Font - QUL Tarteel */
 @font-face {
   font-family: 'qpc-hafs';
-  src: url('/fonts/UthmanicHafs_V22.ttf') format('truetype');
+  src: url('https://static-cdn.tarteel.ai/qul/fonts/UthmanicHafs_V22.ttf') format('truetype'),
+    url('/fonts/UthmanicHafs_V22.ttf') format('truetype');
   font-display: swap;
 }
 
@@ -153,6 +154,7 @@
   * {
     @apply border-border outline-ring/50;
   }
+
   body {
     @apply bg-background text-foreground;
   }
@@ -175,6 +177,7 @@
   0% {
     transform: rotateY(0deg);
   }
+
   100% {
     transform: rotateY(-15deg);
   }
@@ -184,6 +187,7 @@
   0% {
     transform: rotateY(0deg);
   }
+
   100% {
     transform: rotateY(15deg);
   }
@@ -380,6 +384,7 @@
     opacity: 0;
     transform: translateY(10px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -391,10 +396,12 @@
 }
 
 @keyframes pulse-gold {
+
   0%,
   100% {
     box-shadow: 0 0 0 0 rgba(var(--gold-accent), 0.4);
   }
+
   50% {
     box-shadow: 0 0 0 8px rgba(var(--gold-accent), 0);
   }
