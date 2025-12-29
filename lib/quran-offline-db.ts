@@ -175,7 +175,16 @@ async function discoverWordsSchema(): Promise<{ tableName: string; idCol: string
     const columns = tableInfo[0]?.values.map(row => row[1] as string) || [];
     console.log('Words table columns:', columns);
 
-    // Find ID column (word_index, id, word_id, etc.)
+    // Get a sample row to see actual data
+    const sampleRow = db.exec(`SELECT * FROM ${tableName} LIMIT 1`);
+    if (sampleRow.length && sampleRow[0].values.length) {
+        console.log('Sample word row:');
+        sampleRow[0].columns.forEach((col, idx) => {
+            console.log(`  "${col}":`, sampleRow[0].values[0][idx]);
+        });
+    }
+
+    // Find ID column
     let idCol = 'id';
     for (const candidate of ['word_index', 'id', 'word_id', 'index', 'rowid']) {
         if (columns.includes(candidate)) {
@@ -183,15 +192,17 @@ async function discoverWordsSchema(): Promise<{ tableName: string; idCol: string
             break;
         }
     }
+    console.log('Using ID column:', idCol);
 
-    // Find text column
+    // Find text column - try more options including Arabic text columns
     let textCol = 'text';
-    for (const candidate of ['text', 'text_uthmani', 'word_text', 'code_v4']) {
+    for (const candidate of ['text_uthmani', 'text_imlaei', 'text', 'word_text', 'code_v4', 'text_indopak', 'v4_page']) {
         if (columns.includes(candidate)) {
             textCol = candidate;
             break;
         }
     }
+    console.log('Using text column:', textCol);
 
     wordsSchema = { tableName, idCol, textCol };
     return wordsSchema;

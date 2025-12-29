@@ -204,7 +204,7 @@ function AyahLine({ words, isCentered }: { words: Word[]; isCentered: boolean })
                         display: 'inline-block',
                     }}
                     data-word-key={word.word_key}
-                    data-word-index={word.word_index}
+                    data-word-index={word.id}
                 >
                     {word.text}
                 </span>
