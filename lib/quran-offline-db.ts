@@ -1,22 +1,28 @@
 /**
  * بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ
+ * أَشْهَدُ أَنْ لَا إِلَٰهَ إِلَّا اللَّهُ وَأَشْهَدُ أَنَّ مُحَمَّدًا رَسُولُ اللَّهِ
  * 
- * Offline Quran Database - Using sql.js (WebAssembly SQLite)
+ * Offline Quran Database - Using sql.js (WebAssembly SQLite) + JSON
  * Data source: Tarteel QUL
  * 
- * This module provides client-side SQLite access for fully offline
+ * This module provides client-side access for fully offline
  * Mushaf rendering using QUL data (script, layout, surah names).
  * 
- * OFFLINE-FIRST: sql.js is loaded from local /js/ folder
- * All queries use dynamic schema discovery to handle different column names
+ * IMPORTANT: Word text is loaded from Unicode JSON (qpc-hafs-word-by-word.json)
+ * to ensure proper Arabic rendering with the qpc-hafs font.
+ * Layout data still comes from SQLite for page structure.
+ * 
+ * OFFLINE-FIRST: All data loaded from local files
  */
 
 // Database file paths
 const DB_PATHS = {
-    script: '/data/qpc-v4.db',
     layout: '/data/qpc-v4-tajweed-15-lines.db',
     surahNames: '/data/surah-names.db',
 };
+
+// JSON data path for Unicode word text
+const WORDS_JSON_PATH = '/data/qpc-hafs-word-by-word.json';
 
 // sql.js WASM paths (locally hosted for offline-first)
 const SQL_JS_PATH = '/js/sql-wasm.js';
@@ -27,15 +33,27 @@ interface SqlJsDatabase {
     close: () => void;
 }
 
+// Type for word data from JSON
+interface WordJsonEntry {
+    id: number;
+    surah: string;
+    ayah: string;
+    word: string;
+    location: string;
+    text: string;
+}
+
 // Cached database instances
-let scriptDb: SqlJsDatabase | null = null;
 let layoutDb: SqlJsDatabase | null = null;
 let surahNamesDb: SqlJsDatabase | null = null;
 let sqlPromise: Promise<any> | null = null;
 
+// Word data cache (from JSON)
+let wordsJsonCache: Record<string, WordJsonEntry> | null = null;
+let wordsByIdCache: Map<number, WordJsonEntry> | null = null;
+
 // Schema caches
 let surahNamesCache: Record<number, string> | null = null;
-let wordsSchema: { tableName: string; idCol: string; textCol: string } | null = null;
 let pagesSchema: { tableName: string; columns: string[] } | null = null;
 
 // Declare global initSqlJs
@@ -118,10 +136,33 @@ async function loadDatabase(url: string): Promise<SqlJsDatabase> {
 }
 
 async function getScriptDb(): Promise<SqlJsDatabase> {
-    if (!scriptDb) {
-        scriptDb = await loadDatabase(DB_PATHS.script);
+    // This function is no longer used - words are loaded from JSON
+    throw new Error('Script database no longer used. Words are loaded from JSON.');
+}
+
+/**
+ * Load words from JSON file (Unicode text for proper qpc-hafs font rendering)
+ */
+async function loadWordsJson(): Promise<Map<number, WordJsonEntry>> {
+    if (wordsByIdCache) return wordsByIdCache;
+
+    console.log('Loading Unicode words from JSON...');
+    const response = await fetch(WORDS_JSON_PATH);
+    if (!response.ok) {
+        throw new Error(`Failed to load words JSON: ${WORDS_JSON_PATH}`);
     }
-    return scriptDb;
+
+    wordsJsonCache = await response.json();
+    wordsByIdCache = new Map<number, WordJsonEntry>();
+
+    // Build index by ID for efficient lookup
+    for (const key of Object.keys(wordsJsonCache!)) {
+        const entry = wordsJsonCache![key];
+        wordsByIdCache.set(entry.id, entry);
+    }
+
+    console.log(`Loaded ${wordsByIdCache.size} words from JSON`);
+    return wordsByIdCache;
 }
 
 async function getLayoutDb(): Promise<SqlJsDatabase> {
@@ -158,55 +199,9 @@ export interface Word {
 }
 
 /**
- * Discover schema for words table
+ * Note: Words are now loaded from JSON, not SQLite
+ * The discoverWordsSchema function is no longer needed
  */
-async function discoverWordsSchema(): Promise<{ tableName: string; idCol: string; textCol: string }> {
-    if (wordsSchema) return wordsSchema;
-
-    const db = await getScriptDb();
-
-    // Find table name
-    const tables = db.exec(`SELECT name FROM sqlite_master WHERE type='table'`);
-    const tableName = tables[0]?.values[0]?.[0] as string || 'words';
-    console.log('Words table name:', tableName);
-
-    // Get columns
-    const tableInfo = db.exec(`PRAGMA table_info(${tableName})`);
-    const columns = tableInfo[0]?.values.map(row => row[1] as string) || [];
-    console.log('Words table columns:', columns);
-
-    // Get a sample row to see actual data
-    const sampleRow = db.exec(`SELECT * FROM ${tableName} LIMIT 1`);
-    if (sampleRow.length && sampleRow[0].values.length) {
-        console.log('Sample word row:');
-        sampleRow[0].columns.forEach((col, idx) => {
-            console.log(`  "${col}":`, sampleRow[0].values[0][idx]);
-        });
-    }
-
-    // Find ID column
-    let idCol = 'id';
-    for (const candidate of ['word_index', 'id', 'word_id', 'index', 'rowid']) {
-        if (columns.includes(candidate)) {
-            idCol = candidate;
-            break;
-        }
-    }
-    console.log('Using ID column:', idCol);
-
-    // Find text column - try more options including Arabic text columns
-    let textCol = 'text';
-    for (const candidate of ['text_uthmani', 'text_imlaei', 'text', 'word_text', 'code_v4', 'text_indopak', 'v4_page']) {
-        if (columns.includes(candidate)) {
-            textCol = candidate;
-            break;
-        }
-    }
-    console.log('Using text column:', textCol);
-
-    wordsSchema = { tableName, idCol, textCol };
-    return wordsSchema;
-}
 
 /**
  * Discover schema for pages table
@@ -259,45 +254,26 @@ export async function getPageLayout(pageNumber: number): Promise<PageLine[]> {
 }
 
 /**
- * Get words by ID range
+ * Get words by ID range - Now uses JSON data for proper Unicode text
  */
 export async function getWords(firstWordId: number, lastWordId: number): Promise<Word[]> {
-    const schema = await discoverWordsSchema();
-    const db = await getScriptDb();
+    const wordsMap = await loadWordsJson();
+    const words: Word[] = [];
 
-    const result = db.exec(`
-    SELECT * FROM ${schema.tableName}
-    WHERE ${schema.idCol} >= ${firstWordId} AND ${schema.idCol} <= ${lastWordId}
-    ORDER BY ${schema.idCol}
-  `);
-
-    if (!result.length || !result[0].values.length) {
-        return [];
+    for (let id = firstWordId; id <= lastWordId; id++) {
+        const entry = wordsMap.get(id);
+        if (entry) {
+            words.push({
+                id: entry.id,
+                word_key: entry.location,
+                surah: parseInt(entry.surah, 10),
+                ayah: parseInt(entry.ayah, 10),
+                text: entry.text,
+            });
+        }
     }
 
-    const colIndex = (name: string) => {
-        const idx = result[0].columns.indexOf(name);
-        return idx >= 0 ? idx : result[0].columns.indexOf(schema.idCol);
-    };
-
-    return result[0].values.map((row: any[]) => {
-        // Find the ID column index
-        const idIdx = result[0].columns.indexOf(schema.idCol);
-        const textIdx = result[0].columns.indexOf(schema.textCol);
-
-        // Try to find other columns or use defaults
-        const wordKeyIdx = result[0].columns.indexOf('word_key');
-        const surahIdx = result[0].columns.indexOf('surah');
-        const ayahIdx = result[0].columns.indexOf('ayah');
-
-        return {
-            id: row[idIdx] as number,
-            word_key: wordKeyIdx >= 0 ? (row[wordKeyIdx] as string) : `${row[surahIdx] || 1}:${row[ayahIdx] || 1}`,
-            surah: surahIdx >= 0 ? (row[surahIdx] as number) : 1,
-            ayah: ayahIdx >= 0 ? (row[ayahIdx] as number) : 1,
-            text: row[textIdx] as string,
-        };
-    });
+    return words;
 }
 
 /**
@@ -372,24 +348,26 @@ export async function getTotalPages(): Promise<number> {
 }
 
 /**
- * Pre-load all databases
+ * Pre-load all databases and data files
  */
 export async function preloadDatabases(): Promise<void> {
     await Promise.all([
-        discoverWordsSchema(),
+        loadWordsJson(),
         discoverPagesSchema(),
         loadSurahNamesCache(),
     ]);
 }
 
 /**
- * Clean up database connections
+ * Clean up database connections and caches
  */
 export function closeDatabases(): void {
-    if (scriptDb) { scriptDb.close(); scriptDb = null; }
     if (layoutDb) { layoutDb.close(); layoutDb = null; }
     if (surahNamesDb) { surahNamesDb.close(); surahNamesDb = null; }
     surahNamesCache = null;
-    wordsSchema = null;
+    wordsJsonCache = null;
+    wordsByIdCache = null;
     pagesSchema = null;
 }
+
+// حَسْبِيَ اللَّهُ لَا إِلَٰهَ إِلَّا هُوَ عَلَيْهِ تَوَكَّلْتُ وَهُوَ رَبُّ الْعَرْشِ الْعَظِيمِ
