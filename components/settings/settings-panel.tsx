@@ -11,8 +11,11 @@ import { Slider } from "@/components/ui/slider"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Button } from "@/components/ui/button"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible"
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import { useQuran } from "@/contexts/quran-context"
-import { BookOpen, Palette, Volume2, Bell, Download } from "lucide-react"
+import { BookOpen, Palette, Volume2, Bell, Download, ChevronDown, Info } from "lucide-react"
+import { TAJWEED_RULES, type TajweedRule } from "@/lib/tajweed"
 
 const TRANSLATIONS = [
   { id: "sahih", name: "Sahih International", language: "en" },
@@ -38,6 +41,7 @@ export default function SettingsPanel() {
     reviewDue: true,
     streakReminder: false,
   })
+  const [customizeRulesOpen, setCustomizeRulesOpen] = useState(false)
 
   return (
     <div className="max-w-2xl mx-auto space-y-6">
@@ -47,7 +51,7 @@ export default function SettingsPanel() {
       </div>
 
       <Tabs defaultValue="display">
-        <TabsList className="grid w-full grid-cols-4">
+        <TabsList className="grid w-full grid-cols-5">
           <TabsTrigger value="display" className="gap-1">
             <Palette className="h-4 w-4" />
             العرض
@@ -55,6 +59,10 @@ export default function SettingsPanel() {
           <TabsTrigger value="reading" className="gap-1">
             <BookOpen className="h-4 w-4" />
             القراءة
+          </TabsTrigger>
+          <TabsTrigger value="tajweed" className="gap-1">
+            <Palette className="h-4 w-4" />
+            التجويد
           </TabsTrigger>
           <TabsTrigger value="audio" className="gap-1">
             <Volume2 className="h-4 w-4" />
@@ -183,6 +191,333 @@ export default function SettingsPanel() {
                   </SelectContent>
                 </Select>
               </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="tajweed" className="space-y-4 mt-6">
+          <Card>
+            <CardHeader>
+              <CardTitle>إعدادات التجويد</CardTitle>
+              <CardDescription>تخصيص عرض أحكام التجويد</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <Label>إظهار ألوان التجويد</Label>
+                  <p className="text-xs text-muted-foreground">تفعيل أو إيقاف جميع ألوان التجويد</p>
+                </div>
+                <Switch
+                  checked={settings.showTajweed}
+                  onCheckedChange={(v) => updateSettings({ showTajweed: v })}
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label>مستوى الصعوبة</Label>
+                <Select
+                  value={settings.tajweedDifficulty}
+                  onValueChange={(v: "basic" | "intermediate" | "advanced") =>
+                    updateSettings({ tajweedDifficulty: v })
+                  }
+                  disabled={!settings.showTajweed}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="basic">أساسي - Basic</SelectItem>
+                    <SelectItem value="intermediate">متوسط - Intermediate</SelectItem>
+                    <SelectItem value="advanced">متقدم - Advanced</SelectItem>
+                  </SelectContent>
+                </Select>
+                <p className="text-xs text-muted-foreground">اختر مستوى الأحكام المعروضة حسب مستواك</p>
+              </div>
+
+              <div className="space-y-2">
+                <Label>شدة اللون: {settings.tajweedColorIntensity}%</Label>
+                <Slider
+                  value={[settings.tajweedColorIntensity]}
+                  onValueChange={([v]) => updateSettings({ tajweedColorIntensity: v })}
+                  min={0}
+                  max={100}
+                  step={10}
+                  disabled={!settings.showTajweed}
+                />
+                <p className="text-xs text-muted-foreground">تحكم في شدة ألوان التجويد</p>
+              </div>
+
+              <Collapsible open={customizeRulesOpen} onOpenChange={setCustomizeRulesOpen}>
+                <CollapsibleTrigger asChild>
+                  <Button
+                    variant="outline"
+                    className="w-full justify-between"
+                    disabled={!settings.showTajweed}
+                  >
+                    تخصيص الأحكام
+                    <ChevronDown
+                      className={`h-4 w-4 transition-transform ${customizeRulesOpen ? "rotate-180" : ""}`}
+                    />
+                  </Button>
+                </CollapsibleTrigger>
+                <CollapsibleContent className="space-y-4 mt-4">
+                  <div className="space-y-3">
+                    <div className="text-sm font-semibold text-muted-foreground">
+                      أحكام النون الساكنة والتنوين
+                    </div>
+                    {(["ghunnah", "ikhfa", "idgham", "iqlab", "izhar"] as TajweedRule[]).map((ruleId) => {
+                      const rule = TAJWEED_RULES[ruleId]
+                      return (
+                        <div key={ruleId} className="flex items-center justify-between pr-4">
+                          <div className="flex items-center gap-2">
+                            <div
+                              className="w-3 h-3 rounded-full"
+                              style={{ backgroundColor: rule.color }}
+                            />
+                            <TooltipProvider>
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <div className="flex items-center gap-1 cursor-help">
+                                    <Label className="cursor-help">
+                                      {rule.nameArabic} - {rule.nameEnglish}
+                                    </Label>
+                                    <Info className="h-3 w-3 text-muted-foreground" />
+                                  </div>
+                                </TooltipTrigger>
+                                <TooltipContent className="max-w-xs">
+                                  <p className="text-sm">{rule.description.ar}</p>
+                                  <p className="text-xs text-muted-foreground mt-1">
+                                    {rule.description.en}
+                                  </p>
+                                </TooltipContent>
+                              </Tooltip>
+                            </TooltipProvider>
+                          </div>
+                          <Switch
+                            checked={settings.tajweedRules[ruleId] ?? true}
+                            onCheckedChange={(v) =>
+                              updateSettings({
+                                tajweedRules: {
+                                  ...settings.tajweedRules,
+                                  [ruleId]: v,
+                                },
+                              })
+                            }
+                          />
+                        </div>
+                      )
+                    })}
+
+                    <div className="text-sm font-semibold text-muted-foreground mt-4">أحكام القلقلة</div>
+                    {(["qalqalah"] as TajweedRule[]).map((ruleId) => {
+                      const rule = TAJWEED_RULES[ruleId]
+                      return (
+                        <div key={ruleId} className="flex items-center justify-between pr-4">
+                          <div className="flex items-center gap-2">
+                            <div
+                              className="w-3 h-3 rounded-full"
+                              style={{ backgroundColor: rule.color }}
+                            />
+                            <TooltipProvider>
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <div className="flex items-center gap-1 cursor-help">
+                                    <Label className="cursor-help">
+                                      {rule.nameArabic} - {rule.nameEnglish}
+                                    </Label>
+                                    <Info className="h-3 w-3 text-muted-foreground" />
+                                  </div>
+                                </TooltipTrigger>
+                                <TooltipContent className="max-w-xs">
+                                  <p className="text-sm">{rule.description.ar}</p>
+                                  <p className="text-xs text-muted-foreground mt-1">
+                                    {rule.description.en}
+                                  </p>
+                                </TooltipContent>
+                              </Tooltip>
+                            </TooltipProvider>
+                          </div>
+                          <Switch
+                            checked={settings.tajweedRules[ruleId] ?? true}
+                            onCheckedChange={(v) =>
+                              updateSettings({
+                                tajweedRules: {
+                                  ...settings.tajweedRules,
+                                  [ruleId]: v,
+                                },
+                              })
+                            }
+                          />
+                        </div>
+                      )
+                    })}
+
+                    <div className="text-sm font-semibold text-muted-foreground mt-4">أحكام المد</div>
+                    {(["madd", "madd_lazim", "madd_muttasil", "madd_munfasil"] as TajweedRule[]).map(
+                      (ruleId) => {
+                        const rule = TAJWEED_RULES[ruleId]
+                        return (
+                          <div key={ruleId} className="flex items-center justify-between pr-4">
+                            <div className="flex items-center gap-2">
+                              <div
+                                className="w-3 h-3 rounded-full"
+                                style={{ backgroundColor: rule.color }}
+                              />
+                              <TooltipProvider>
+                                <Tooltip>
+                                  <TooltipTrigger asChild>
+                                    <div className="flex items-center gap-1 cursor-help">
+                                      <Label className="cursor-help">
+                                        {rule.nameArabic} - {rule.nameEnglish}
+                                      </Label>
+                                      <Info className="h-3 w-3 text-muted-foreground" />
+                                    </div>
+                                  </TooltipTrigger>
+                                  <TooltipContent className="max-w-xs">
+                                    <p className="text-sm">{rule.description.ar}</p>
+                                    <p className="text-xs text-muted-foreground mt-1">
+                                      {rule.description.en}
+                                    </p>
+                                  </TooltipContent>
+                                </Tooltip>
+                              </TooltipProvider>
+                            </div>
+                            <Switch
+                              checked={settings.tajweedRules[ruleId] ?? true}
+                              onCheckedChange={(v) =>
+                                updateSettings({
+                                  tajweedRules: {
+                                    ...settings.tajweedRules,
+                                    [ruleId]: v,
+                                  },
+                                })
+                              }
+                            />
+                          </div>
+                        )
+                      },
+                    )}
+
+                    <div className="text-sm font-semibold text-muted-foreground mt-4">أحكام اللام</div>
+                    {(["lam_shamsiyyah", "lam_qamariyyah"] as TajweedRule[]).map((ruleId) => {
+                      const rule = TAJWEED_RULES[ruleId]
+                      return (
+                        <div key={ruleId} className="flex items-center justify-between pr-4">
+                          <div className="flex items-center gap-2">
+                            <div
+                              className="w-3 h-3 rounded-full"
+                              style={{ backgroundColor: rule.color }}
+                            />
+                            <TooltipProvider>
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <div className="flex items-center gap-1 cursor-help">
+                                    <Label className="cursor-help">
+                                      {rule.nameArabic} - {rule.nameEnglish}
+                                    </Label>
+                                    <Info className="h-3 w-3 text-muted-foreground" />
+                                  </div>
+                                </TooltipTrigger>
+                                <TooltipContent className="max-w-xs">
+                                  <p className="text-sm">{rule.description.ar}</p>
+                                  <p className="text-xs text-muted-foreground mt-1">
+                                    {rule.description.en}
+                                  </p>
+                                </TooltipContent>
+                              </Tooltip>
+                            </TooltipProvider>
+                          </div>
+                          <Switch
+                            checked={settings.tajweedRules[ruleId] ?? true}
+                            onCheckedChange={(v) =>
+                              updateSettings({
+                                tajweedRules: {
+                                  ...settings.tajweedRules,
+                                  [ruleId]: v,
+                                },
+                              })
+                            }
+                          />
+                        </div>
+                      )
+                    })}
+
+                    <div className="text-sm font-semibold text-muted-foreground mt-4">أخرى</div>
+                    {(["silent"] as TajweedRule[]).map((ruleId) => {
+                      const rule = TAJWEED_RULES[ruleId]
+                      return (
+                        <div key={ruleId} className="flex items-center justify-between pr-4">
+                          <div className="flex items-center gap-2">
+                            <div
+                              className="w-3 h-3 rounded-full"
+                              style={{ backgroundColor: rule.color }}
+                            />
+                            <TooltipProvider>
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <div className="flex items-center gap-1 cursor-help">
+                                    <Label className="cursor-help">
+                                      {rule.nameArabic} - {rule.nameEnglish}
+                                    </Label>
+                                    <Info className="h-3 w-3 text-muted-foreground" />
+                                  </div>
+                                </TooltipTrigger>
+                                <TooltipContent className="max-w-xs">
+                                  <p className="text-sm">{rule.description.ar}</p>
+                                  <p className="text-xs text-muted-foreground mt-1">
+                                    {rule.description.en}
+                                  </p>
+                                </TooltipContent>
+                              </Tooltip>
+                            </TooltipProvider>
+                          </div>
+                          <Switch
+                            checked={settings.tajweedRules[ruleId] ?? true}
+                            onCheckedChange={(v) =>
+                              updateSettings({
+                                tajweedRules: {
+                                  ...settings.tajweedRules,
+                                  [ruleId]: v,
+                                },
+                              })
+                            }
+                          />
+                        </div>
+                      )
+                    })}
+                  </div>
+                </CollapsibleContent>
+              </Collapsible>
+
+              <Button
+                variant="outline"
+                className="w-full"
+                onClick={() => {
+                  updateSettings({
+                    showTajweed: true,
+                    tajweedDifficulty: "basic",
+                    tajweedColorIntensity: 80,
+                    tajweedRules: {
+                      ghunnah: true,
+                      ikhfa: true,
+                      idgham: true,
+                      iqlab: true,
+                      qalqalah: true,
+                      madd: true,
+                      madd_lazim: true,
+                      madd_muttasil: true,
+                      madd_munfasil: true,
+                      izhar: true,
+                      lam_shamsiyyah: true,
+                      lam_qamariyyah: true,
+                      silent: true,
+                      normal: true,
+                    },
+                  })
+                }}
+              >
+                إعادة تعيين إلى الافتراضي
+              </Button>
             </CardContent>
           </Card>
         </TabsContent>
