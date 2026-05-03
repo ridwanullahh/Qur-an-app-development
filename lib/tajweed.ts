@@ -1,22 +1,70 @@
 import type React from "react"
 // بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ
 // Tajweed Rules and Color System
+//
+// This file defines 38 comprehensive Tajweed rules from basic to advanced levels.
+//
+// COLOR FAMILY DESIGN:
+// Related rules share color families (same hue, varying saturation/lightness) to help
+// learners understand relationships between parent and child rules. For example:
+// - madd-red family: All Madd prolongation rules use red shades
+// - qalqalah-blue family: All Qalqalah rules use blue shades
+// - idgham-purple family: All Idgham rules use purple shades
+//
+// This pedagogical approach reduces cognitive load while maintaining clarity.
+// Colors are distinct ACROSS rule categories but MAY be shared WITHIN families.
+// See el-38h (Tajweed Color Palette Reference) for complete color specifications.
 
 export type TajweedRule =
+  // Basic Noon Sakinah and Tanween Rules
   | "ghunnah" // غنة - Nasal sound
   | "ikhfa" // إخفاء - Hiding
   | "idgham" // إدغام - Merging
   | "iqlab" // إقلاب - Conversion
+  | "izhar" // إظهار - Clarity
+  // Detailed Noon Sakinah Rules
+  | "izhar_halqi" // إظهار حلقي - Throat clarity
+  | "idgham_with_ghunnah" // إدغام بغنة - Merging with nasal
+  | "idgham_without_ghunnah" // إدغام بلا غنة - Merging without nasal
+  | "ikhfa_haqiqi" // إخفاء حقيقي - True hiding
+  // Meem Sakinah Rules
+  | "ikhfa_shafawi" // إخفاء شفوي - Labial hiding
+  | "idgham_shafawi" // إدغام شفوي - Labial merging
+  | "izhar_shafawi" // إظهار شفوي - Labial clarity
+  // Qalqalah Rules
   | "qalqalah" // قلقلة - Echo
+  | "qalqalah_sughra" // قلقلة صغرى - Minor echo
+  | "qalqalah_kubra" // قلقلة كبرى - Major echo
+  // Madd (Prolongation) Rules
   | "madd" // مد - Prolongation
+  | "madd_tabii" // مد طبيعي - Natural prolongation
   | "madd_lazim" // مد لازم - Obligatory prolongation
   | "madd_muttasil" // مد متصل - Connected prolongation
   | "madd_munfasil" // مد منفصل - Separated prolongation
-  | "izhar" // إظهار - Clarity
-  | "lam_shamsiyyah" // لام شمسية
-  | "lam_qamariyyah" // لام قمرية
-  | "silent" // حرف ساكن
-  | "normal" // عادي
+  | "madd_badal" // مد بدل - Substitute prolongation
+  | "madd_arid" // مد عارض للسكون - Pause prolongation
+  | "madd_leen" // مد لين - Soft prolongation
+  | "madd_silah_sughra" // مد صلة صغرى - Minor connection
+  | "madd_silah_kubra" // مد صلة كبرى - Major connection
+  | "madd_iwad" // مد عوض - Compensation prolongation
+  | "madd_tamkeen" // مد تمكين - Emphasis prolongation
+  | "madd_farq" // مد فرق - Distinction prolongation
+  // Ra Rules
+  | "tafkheem" // تفخيم - Heavy/thick pronunciation
+  | "tarqeeq" // ترقيق - Light/thin pronunciation
+  // Lam Rules
+  | "lam_shamsiyyah" // لام شمسية - Sun letter lam
+  | "lam_qamariyyah" // لام قمرية - Moon letter lam
+  | "lam_jalalah_tafkheem" // لام لفظ الجلالة تفخيم - Heavy Allah lam
+  | "lam_jalalah_tarqeeq" // لام لفظ الجلالة ترقيق - Light Allah lam
+  // Sifaat (Characteristics)
+  | "istila" // استعلاء - Elevation
+  | "istifal" // استفال - Lowering
+  // Special States
+  | "silent" // حرف ساكن - Silent
+  | "normal" // عادي - Normal
+
+export type TajweedDifficulty = "basic" | "intermediate" | "advanced"
 
 export interface TajweedRuleInfo {
   id: TajweedRule
@@ -26,6 +74,8 @@ export interface TajweedRuleInfo {
   bgColor: string
   description: Record<string, string>
   examples: string[]
+  difficulty: TajweedDifficulty
+  colorFamily?: string // Optional: groups related rules by color family (e.g., "madd-red", "qalqalah-blue")
 }
 
 export const TAJWEED_RULES: Record<TajweedRule, TajweedRuleInfo> = {
@@ -41,6 +91,8 @@ export const TAJWEED_RULES: Record<TajweedRule, TajweedRuleInfo> = {
       ur: "ناک سے نکلنے والی آواز جو نون اور میم کے ساتھ ہوتی ہے",
     },
     examples: ["نَّ", "مَّ", "نْ", "مْ"],
+    difficulty: "basic",
+    colorFamily: "ghunnah-green",
   },
   ikhfa: {
     id: "ikhfa",
@@ -54,6 +106,8 @@ export const TAJWEED_RULES: Record<TajweedRule, TajweedRuleInfo> = {
       ur: "نون ساکنہ یا تنوین کو اظہار اور ادغام کے درمیان پڑھنا",
     },
     examples: ["مِنْ قَبْلِ", "أَنْتَ", "عَنْكَ"],
+    difficulty: "basic",
+    colorFamily: "ikhfa-orange",
   },
   idgham: {
     id: "idgham",
@@ -67,6 +121,8 @@ export const TAJWEED_RULES: Record<TajweedRule, TajweedRuleInfo> = {
       ur: "ساکن حرف کو متحرک حرف میں ملا دینا",
     },
     examples: ["مِنْ يَوْمِ", "مِنْ وَالِ", "مِنْ مَالٍ"],
+    difficulty: "basic",
+    colorFamily: "idgham-purple",
   },
   iqlab: {
     id: "iqlab",
@@ -80,71 +136,8 @@ export const TAJWEED_RULES: Record<TajweedRule, TajweedRuleInfo> = {
       ur: "نون ساکنہ یا تنوین کو باء سے پہلے میم میں بدلنا",
     },
     examples: ["مِنْ بَعْدِ", "أَنْبِئْهُم", "سَمِيعٌ بَصِير"],
-  },
-  qalqalah: {
-    id: "qalqalah",
-    nameArabic: "قَلْقَلَة",
-    nameEnglish: "Qalqalah",
-    color: "#2563eb",
-    bgColor: "rgba(37, 99, 235, 0.15)",
-    description: {
-      ar: "اضطراب الصوت عند النطق بالحرف الساكن حتى يُسمع له نبرة قوية (ق ط ب ج د)",
-      en: "An echoing sound when pronouncing certain silent letters (Qaf, Ta, Ba, Jeem, Dal)",
-      ur: "قاف، طاء، باء، جیم، دال کے ساکن ہونے پر آواز میں ارتعاش",
-    },
-    examples: ["قْ", "طْ", "بْ", "جْ", "دْ"],
-  },
-  madd: {
-    id: "madd",
-    nameArabic: "مَدّ",
-    nameEnglish: "Madd",
-    color: "#dc2626",
-    bgColor: "rgba(220, 38, 38, 0.15)",
-    description: {
-      ar: "إطالة الصوت بحرف من حروف المد (ا، و، ي)",
-      en: "Prolongation of sound with a Madd letter (Alif, Waw, Ya)",
-      ur: "الف، واو، یاء کو لمبا کر کے پڑھنا",
-    },
-    examples: ["قَالَ", "يَقُولُ", "قِيلَ"],
-  },
-  madd_lazim: {
-    id: "madd_lazim",
-    nameArabic: "مَدّ لازِم",
-    nameEnglish: "Madd Lazim",
-    color: "#be123c",
-    bgColor: "rgba(190, 18, 60, 0.15)",
-    description: {
-      ar: "المد الواجب ست حركات عند وجود سكون أصلي بعد حرف المد",
-      en: "Obligatory prolongation of 6 counts when followed by original sukoon",
-      ur: "چھ حرکات کا لازمی مد",
-    },
-    examples: ["الْحَاقَّة", "الطَّامَّة", "الضَّالِّين"],
-  },
-  madd_muttasil: {
-    id: "madd_muttasil",
-    nameArabic: "مَدّ مُتَّصِل",
-    nameEnglish: "Madd Muttasil",
-    color: "#e11d48",
-    bgColor: "rgba(225, 29, 72, 0.15)",
-    description: {
-      ar: "المد الواجب عند وجود همزة بعد حرف المد في نفس الكلمة",
-      en: "Connected prolongation when Hamza follows Madd letter in same word",
-      ur: "ایک لفظ میں مد کے بعد ہمزہ آنے پر واجب مد",
-    },
-    examples: ["جَاءَ", "سُوءَ", "جِيءَ"],
-  },
-  madd_munfasil: {
-    id: "madd_munfasil",
-    nameArabic: "مَدّ مُنْفَصِل",
-    nameEnglish: "Madd Munfasil",
-    color: "#f43f5e",
-    bgColor: "rgba(244, 63, 94, 0.15)",
-    description: {
-      ar: "المد الجائز عند وجود همزة في بداية الكلمة التالية",
-      en: "Separated prolongation when Hamza is at the start of next word",
-      ur: "الگ لفظ میں ہمزہ آنے پر جائز مد",
-    },
-    examples: ["إِنَّا أَنزَلْنَاهُ", "قَالُوا آمَنَّا", "فِي أَنفُسِكُمْ"],
+    difficulty: "basic",
+    colorFamily: "iqlab-cyan",
   },
   izhar: {
     id: "izhar",
@@ -158,6 +151,383 @@ export const TAJWEED_RULES: Record<TajweedRule, TajweedRuleInfo> = {
       ur: "حرف کو واضح طور پر بغیر غنہ کے ادا کرنا",
     },
     examples: ["مِنْ عِلْمٍ", "مَنْ آمَنَ", "مِنْ هَادٍ"],
+    difficulty: "basic",
+    colorFamily: "izhar-lime",
+  },
+  izhar_halqi: {
+    id: "izhar_halqi",
+    nameArabic: "إِظْهَار حَلْقِي",
+    nameEnglish: "Izhar Halqi",
+    color: "#84cc16",
+    bgColor: "rgba(132, 204, 22, 0.15)",
+    description: {
+      ar: "إظهار النون الساكنة أو التنوين عند أحد الحروف الستة الحلقية (ء ه ع ح غ خ)",
+      en: "Clear pronunciation of Noon Sakinah or Tanween before the six throat letters",
+      ur: "چھ حلقی حروف سے پہلے نون ساکنہ یا تنوین کا واضح اظہار",
+    },
+    examples: ["مِنْ عِلْمٍ", "مَنْ آمَنَ", "مِنْ هَادٍ", "يَنْأَوْنَ", "مِنْ غِلٍّ", "مِنْ خَيْرٍ"],
+    difficulty: "intermediate",
+    colorFamily: "izhar-lime",
+  },
+  idgham_with_ghunnah: {
+    id: "idgham_with_ghunnah",
+    nameArabic: "إِدْغَام بِغُنَّة",
+    nameEnglish: "Idgham with Ghunnah",
+    color: "#a855f7",
+    bgColor: "rgba(168, 85, 247, 0.15)",
+    description: {
+      ar: "إدغام النون الساكنة أو التنوين في أحد حروف (ي ن م و) مع الغنة",
+      en: "Merging Noon Sakinah or Tanween into letters ي ن م و with nasal sound",
+      ur: "نون ساکنہ یا تنوین کو ینمو میں غنہ کے ساتھ ملانا",
+    },
+    examples: ["مِنْ يَوْمٍ", "مِنْ نَارٍ", "مِنْ مَالٍ", "مِنْ وَالٍ"],
+    difficulty: "intermediate",
+    colorFamily: "idgham-purple",
+  },
+  idgham_without_ghunnah: {
+    id: "idgham_without_ghunnah",
+    nameArabic: "إِدْغَام بِلَا غُنَّة",
+    nameEnglish: "Idgham without Ghunnah",
+    color: "#7c3aed",
+    bgColor: "rgba(124, 58, 237, 0.15)",
+    description: {
+      ar: "إدغام النون الساكنة أو التنوين في اللام أو الراء بلا غنة",
+      en: "Merging Noon Sakinah or Tanween into Lam or Ra without nasal sound",
+      ur: "نون ساکنہ یا تنوین کو لام یا راء میں بغیر غنہ کے ملانا",
+    },
+    examples: ["مِنْ لَدُنْهُ", "مِنْ رَبِّهِمْ", "هُدًى لِلْمُتَّقِينَ"],
+    difficulty: "intermediate",
+    colorFamily: "idgham-purple",
+  },
+  ikhfa_haqiqi: {
+    id: "ikhfa_haqiqi",
+    nameArabic: "إِخْفَاء حَقِيقِي",
+    nameEnglish: "Ikhfa Haqiqi",
+    color: "#f97316",
+    bgColor: "rgba(249, 115, 22, 0.15)",
+    description: {
+      ar: "إخفاء النون الساكنة أو التنوين عند أحد الحروف الخمسة عشر",
+      en: "True hiding of Noon Sakinah or Tanween before 15 specific letters",
+      ur: "پندرہ حروف سے پہلے نون ساکنہ یا تنوین کو چھپانا",
+    },
+    examples: ["مِنْ قَبْلِ", "أَنْتَ", "عَنْكَ", "مِنْ صَلْصَالٍ", "مِنْ طِينٍ"],
+    difficulty: "intermediate",
+    colorFamily: "ikhfa-orange",
+  },
+  ikhfa_shafawi: {
+    id: "ikhfa_shafawi",
+    nameArabic: "إِخْفَاء شَفَوِي",
+    nameEnglish: "Ikhfa Shafawi",
+    color: "#fb923c",
+    bgColor: "rgba(251, 146, 60, 0.15)",
+    description: {
+      ar: "إخفاء الميم الساكنة عند الباء مع الغنة",
+      en: "Hiding Meem Sakinah before Ba with nasal sound",
+      ur: "میم ساکن کو باء سے پہلے غنہ کے ساتھ چھپانا",
+    },
+    examples: ["تَرْمِيهِمْ بِحِجَارَةٍ", "هُمْ بِهَا", "كَمْ بَعَثْنَا"],
+    difficulty: "intermediate",
+    colorFamily: "ikhfa-orange",
+  },
+  idgham_shafawi: {
+    id: "idgham_shafawi",
+    nameArabic: "إِدْغَام شَفَوِي",
+    nameEnglish: "Idgham Shafawi",
+    color: "#c026d3",
+    bgColor: "rgba(192, 38, 211, 0.15)",
+    description: {
+      ar: "إدغام الميم الساكنة في الميم المتحركة مع الغنة",
+      en: "Merging Meem Sakinah into Meem with nasal sound",
+      ur: "میم ساکن کو میم متحرک میں غنہ کے ساتھ ملانا",
+    },
+    examples: ["لَهُمْ مَا", "كَمْ مِنْ", "أَمْ مَنْ"],
+    difficulty: "intermediate",
+    colorFamily: "idgham-purple",
+  },
+  izhar_shafawi: {
+    id: "izhar_shafawi",
+    nameArabic: "إِظْهَار شَفَوِي",
+    nameEnglish: "Izhar Shafawi",
+    color: "#a3e635",
+    bgColor: "rgba(163, 230, 53, 0.15)",
+    description: {
+      ar: "إظهار الميم الساكنة عند باقي الحروف",
+      en: "Clear pronunciation of Meem Sakinah before other letters",
+      ur: "میم ساکن کو دیگر حروف سے پہلے واضح پڑھنا",
+    },
+    examples: ["هُمْ فِيهَا", "عَلَيْهِمْ وَلَا", "لَهُمْ عَذَابٌ"],
+    difficulty: "intermediate",
+    colorFamily: "izhar-lime",
+  },
+  qalqalah: {
+    id: "qalqalah",
+    nameArabic: "قَلْقَلَة",
+    nameEnglish: "Qalqalah",
+    color: "#2563eb",
+    bgColor: "rgba(37, 99, 235, 0.15)",
+    description: {
+      ar: "اضطراب الصوت عند النطق بالحرف الساكن حتى يُسمع له نبرة قوية (ق ط ب ج د)",
+      en: "An echoing sound when pronouncing certain silent letters (Qaf, Ta, Ba, Jeem, Dal)",
+      ur: "قاف، طاء، باء، جیم، دال کے ساکن ہونے پر آواز میں ارتعاش",
+    },
+    examples: ["قْ", "طْ", "بْ", "جْ", "دْ"],
+    difficulty: "basic",
+    colorFamily: "qalqalah-blue",
+  },
+  qalqalah_sughra: {
+    id: "qalqalah_sughra",
+    nameArabic: "قَلْقَلَة صُغْرَى",
+    nameEnglish: "Qalqalah Sughra",
+    color: "#3b82f6",
+    bgColor: "rgba(59, 130, 246, 0.15)",
+    description: {
+      ar: "القلقلة الصغرى عند الوصل في وسط الكلمة أو آخرها",
+      en: "Minor Qalqalah when continuing in the middle or end of a word",
+      ur: "چھوٹا قلقلہ جب لفظ کے درمیان یا آخر میں ملایا جائے",
+    },
+    examples: ["يَقْطَعُونَ", "أَجْرٌ", "مِنْ قَبْلِ"],
+    difficulty: "intermediate",
+    colorFamily: "qalqalah-blue",
+  },
+  qalqalah_kubra: {
+    id: "qalqalah_kubra",
+    nameArabic: "قَلْقَلَة كُبْرَى",
+    nameEnglish: "Qalqalah Kubra",
+    color: "#1d4ed8",
+    bgColor: "rgba(29, 78, 216, 0.15)",
+    description: {
+      ar: "القلقلة الكبرى عند الوقف على حرف القلقلة",
+      en: "Major Qalqalah when stopping on a Qalqalah letter",
+      ur: "بڑا قلقلہ جب قلقلہ حرف پر وقف کیا جائے",
+    },
+    examples: ["الْفَلَقْ", "وَتَبَّ", "الْحَقّ"],
+    difficulty: "intermediate",
+    colorFamily: "qalqalah-blue",
+  },
+  madd: {
+    id: "madd",
+    nameArabic: "مَدّ",
+    nameEnglish: "Madd",
+    color: "#dc2626",
+    bgColor: "rgba(220, 38, 38, 0.15)",
+    description: {
+      ar: "إطالة الصوت بحرف من حروف المد (ا، و، ي)",
+      en: "Prolongation of sound with a Madd letter (Alif, Waw, Ya)",
+      ur: "الف، واو، یاء کو لمبا کر کے پڑھنا",
+    },
+    examples: ["قَالَ", "يَقُولُ", "قِيلَ"],
+    difficulty: "basic",
+    colorFamily: "madd-red",
+  },
+  madd_tabii: {
+    id: "madd_tabii",
+    nameArabic: "مَدّ طَبِيعِي",
+    nameEnglish: "Madd Tabii",
+    color: "#ef4444",
+    bgColor: "rgba(239, 68, 68, 0.15)",
+    description: {
+      ar: "المد الطبيعي بمقدار حركتين، لا يتوقف على سبب",
+      en: "Natural prolongation of 2 counts, not dependent on any cause",
+      ur: "قدرتی مد دو حرکات کا، کسی سبب پر منحصر نہیں",
+    },
+    examples: ["قَالَ", "يَقُولُ", "قِيلَ", "نُوحِيهَا"],
+    difficulty: "basic",
+    colorFamily: "madd-red",
+  },
+  madd_lazim: {
+    id: "madd_lazim",
+    nameArabic: "مَدّ لازِم",
+    nameEnglish: "Madd Lazim",
+    color: "#be123c",
+    bgColor: "rgba(190, 18, 60, 0.15)",
+    description: {
+      ar: "المد الواجب ست حركات عند وجود سكون أصلي بعد حرف المد",
+      en: "Obligatory prolongation of 6 counts when followed by original sukoon",
+      ur: "چھ حرکات کا لازمی مد",
+    },
+    examples: ["الْحَاقَّة", "الطَّامَّة", "الضَّالِّين"],
+    difficulty: "intermediate",
+    colorFamily: "madd-red",
+  },
+  madd_muttasil: {
+    id: "madd_muttasil",
+    nameArabic: "مَدّ مُتَّصِل",
+    nameEnglish: "Madd Muttasil",
+    color: "#e11d48",
+    bgColor: "rgba(225, 29, 72, 0.15)",
+    description: {
+      ar: "المد الواجب عند وجود همزة بعد حرف المد في نفس الكلمة",
+      en: "Connected prolongation when Hamza follows Madd letter in same word",
+      ur: "ایک لفظ میں مد کے بعد ہمزہ آنے پر واجب مد",
+    },
+    examples: ["جَاءَ", "سُوءَ", "جِيءَ"],
+    difficulty: "basic",
+    colorFamily: "madd-red",
+  },
+  madd_munfasil: {
+    id: "madd_munfasil",
+    nameArabic: "مَدّ مُنْفَصِل",
+    nameEnglish: "Madd Munfasil",
+    color: "#f43f5e",
+    bgColor: "rgba(244, 63, 94, 0.15)",
+    description: {
+      ar: "المد الجائز عند وجود همزة في بداية الكلمة التالية",
+      en: "Separated prolongation when Hamza is at the start of next word",
+      ur: "الگ لفظ میں ہمزہ آنے پر جائز مد",
+    },
+    examples: ["إِنَّا أَنزَلْنَاهُ", "قَالُوا آمَنَّا", "فِي أَنفُسِكُمْ"],
+    difficulty: "basic",
+    colorFamily: "madd-red",
+  },
+  madd_badal: {
+    id: "madd_badal",
+    nameArabic: "مَدّ بَدَل",
+    nameEnglish: "Madd Badal",
+    color: "#fb7185",
+    bgColor: "rgba(251, 113, 133, 0.15)",
+    description: {
+      ar: "المد البدل بمقدار حركتين عند إبدال الهمزة بحرف مد",
+      en: "Substitute prolongation of 2 counts when Hamza is replaced by Madd letter",
+      ur: "بدل کا مد دو حرکات جب ہمزہ مد میں بدلا جائے",
+    },
+    examples: ["آمَنَ", "إِيمَانًا", "أُوتُوا"],
+    difficulty: "intermediate",
+    colorFamily: "madd-red",
+  },
+  madd_arid: {
+    id: "madd_arid",
+    nameArabic: "مَدّ عَارِض لِلسُّكُون",
+    nameEnglish: "Madd Arid Lissukoon",
+    color: "#fda4af",
+    bgColor: "rgba(253, 164, 175, 0.15)",
+    description: {
+      ar: "المد العارض للسكون بمقدار 2 أو 4 أو 6 حركات عند الوقف",
+      en: "Prolongation due to pause of 2, 4, or 6 counts when stopping",
+      ur: "وقف کی وجہ سے 2، 4، یا 6 حرکات کا مد",
+    },
+    examples: ["الْعَالَمِينَ", "نَسْتَعِينُ", "الرَّحِيمِ"],
+    difficulty: "intermediate",
+    colorFamily: "madd-red",
+  },
+  madd_leen: {
+    id: "madd_leen",
+    nameArabic: "مَدّ لِين",
+    nameEnglish: "Madd Leen",
+    color: "#fecdd3",
+    bgColor: "rgba(254, 205, 211, 0.15)",
+    description: {
+      ar: "المد اللين بمقدار 2 أو 4 أو 6 حركات عند الوقف على واو أوياء ساكنتين مفتوح ما قبلهما",
+      en: "Soft prolongation of 2, 4, or 6 counts when stopping on Waw or Ya with Fatha before",
+      ur: "نرم مد 2، 4، یا 6 حرکات جب واو یا یاء ساکن پر وقف ہو",
+    },
+    examples: ["خَوْفٌ", "بَيْتٍ", "الصَّيْفِ"],
+    difficulty: "advanced",
+    colorFamily: "madd-red",
+  },
+  madd_silah_sughra: {
+    id: "madd_silah_sughra",
+    nameArabic: "مَدّ صِلَة صُغْرَى",
+    nameEnglish: "Madd Silah Sughra",
+    color: "#f87171",
+    bgColor: "rgba(248, 113, 113, 0.15)",
+    description: {
+      ar: "مد الصلة الصغرى بمقدار حركتين في هاء الضمير",
+      en: "Minor connection prolongation of 2 counts in pronoun Ha",
+      ur: "ضمیر کی ہاء میں چھوٹا صلہ دو حرکات",
+    },
+    examples: ["بِهِ مُؤْمِنُونَ", "لَهُ مَا", "إِنَّهُ كَانَ"],
+    difficulty: "advanced",
+    colorFamily: "madd-red",
+  },
+  madd_silah_kubra: {
+    id: "madd_silah_kubra",
+    nameArabic: "مَدّ صِلَة كُبْرَى",
+    nameEnglish: "Madd Silah Kubra",
+    color: "#dc2626",
+    bgColor: "rgba(220, 38, 38, 0.2)",
+    description: {
+      ar: "مد الصلة الكبرى عند وجود همزة بعد هاء الضمير",
+      en: "Major connection prolongation when Hamza follows pronoun Ha",
+      ur: "بڑا صلہ جب ضمیر کی ہاء کے بعد ہمزہ آئے",
+    },
+    examples: ["مَالَهُ أَخْلَدَهُ", "إِنَّهُ أَنَا"],
+    difficulty: "advanced",
+    colorFamily: "madd-red",
+  },
+  madd_iwad: {
+    id: "madd_iwad",
+    nameArabic: "مَدّ عِوَض",
+    nameEnglish: "Madd Iwad",
+    color: "#fca5a5",
+    bgColor: "rgba(252, 165, 165, 0.15)",
+    description: {
+      ar: "مد العوض بمقدار حركتين عند الوقف على التنوين المنصوب",
+      en: "Compensation prolongation of 2 counts when stopping on Tanween Fatha",
+      ur: "تنوین فتحہ پر وقف کرتے وقت دو حرکات کا عوض مد",
+    },
+    examples: ["عَلِيمًا", "حَكِيمًا", "غَفُورًا"],
+    difficulty: "advanced",
+    colorFamily: "madd-red",
+  },
+  madd_tamkeen: {
+    id: "madd_tamkeen",
+    nameArabic: "مَدّ تَمْكِين",
+    nameEnglish: "Madd Tamkeen",
+    color: "#b91c1c",
+    bgColor: "rgba(185, 28, 28, 0.15)",
+    description: {
+      ar: "مد التمكين عند اجتماع ياءين الأولى مشددة والثانية ساكنة",
+      en: "Emphasis prolongation when two Ya letters meet, first with Shaddah, second silent",
+      ur: "تمکین کا مد جب دو یاء ملیں پہلی مشدد اور دوسری ساکن",
+    },
+    examples: ["النَّبِيِّينَ", "حُيِّيتُم"],
+    difficulty: "advanced",
+    colorFamily: "madd-red",
+  },
+  madd_farq: {
+    id: "madd_farq",
+    nameArabic: "مَدّ فَرْق",
+    nameEnglish: "Madd Farq",
+    color: "#991b1b",
+    bgColor: "rgba(153, 27, 27, 0.15)",
+    description: {
+      ar: "مد الفرق ست حركات للتفريق بين الاستفهام والخبر",
+      en: "Distinction prolongation of 6 counts to differentiate between question and statement",
+      ur: "فرق کا مد چھ حرکات سوال اور خبر میں فرق کے لیے",
+    },
+    examples: ["آلذَّكَرَيْنِ", "آللَّهُ", "آلْآنَ"],
+    difficulty: "advanced",
+    colorFamily: "madd-red",
+  },
+  tafkheem: {
+    id: "tafkheem",
+    nameArabic: "تَفْخِيم",
+    nameEnglish: "Tafkheem",
+    color: "#b45309",
+    bgColor: "rgba(180, 83, 9, 0.15)",
+    description: {
+      ar: "التفخيم هو تسمين صوت الحرف عند النطق به",
+      en: "Thick or heavy pronunciation of the letter Ra",
+      ur: "راء کو موٹا یا بھاری تلفظ کرنا",
+    },
+    examples: ["رَبِّ", "رَحْمَة", "قُرْآن"],
+    difficulty: "intermediate",
+    colorFamily: "ra-brown",
+  },
+  tarqeeq: {
+    id: "tarqeeq",
+    nameArabic: "تَرْقِيق",
+    nameEnglish: "Tarqeeq",
+    color: "#06b6d4",
+    bgColor: "rgba(6, 182, 212, 0.15)",
+    description: {
+      ar: "الترقيق هو نحول صوت الحرف عند النطق به",
+      en: "Thin or light pronunciation of the letter Ra",
+      ur: "راء کو باریک یا ہلکا تلفظ کرنا",
+    },
+    examples: ["فِرْعَوْن", "مِرْيَة", "الْخَيْر"],
+    difficulty: "intermediate",
+    colorFamily: "ra-cyan",
   },
   lam_shamsiyyah: {
     id: "lam_shamsiyyah",
@@ -171,6 +541,8 @@ export const TAJWEED_RULES: Record<TajweedRule, TajweedRuleInfo> = {
       ur: "وہ لام جو شمسی حرف میں مدغم ہو جائے",
     },
     examples: ["الشَّمْس", "النَّاس", "الرَّحْمَن"],
+    difficulty: "basic",
+    colorFamily: "lam-yellow",
   },
   lam_qamariyyah: {
     id: "lam_qamariyyah",
@@ -184,6 +556,68 @@ export const TAJWEED_RULES: Record<TajweedRule, TajweedRuleInfo> = {
       ur: "وہ لام جو قمری حروف سے پہلے واضح ہو",
     },
     examples: ["الْقَمَر", "الْكِتَاب", "الْعَالَمِين"],
+    difficulty: "basic",
+    colorFamily: "lam-sky",
+  },
+  lam_jalalah_tafkheem: {
+    id: "lam_jalalah_tafkheem",
+    nameArabic: "لام لَفْظ الجَلَالَة - تَفْخِيم",
+    nameEnglish: "Lam Lafdhul Jalalah - Tafkheem",
+    color: "#92400e",
+    bgColor: "rgba(146, 64, 14, 0.15)",
+    description: {
+      ar: "تفخيم لام لفظ الجلالة (الله) إذا سبقها فتح أو ضم",
+      en: "Heavy pronunciation of Lam in Allah's name when preceded by Fatha or Damma",
+      ur: "اللہ کے لفظ میں لام کو بھاری پڑھنا جب فتحہ یا ضمہ سے پہلے ہو",
+    },
+    examples: ["قَالَ اللَّهُ", "عَبْدُ اللَّهِ", "رَسُولُ اللَّهِ"],
+    difficulty: "intermediate",
+    colorFamily: "lam-jalalah-brown",
+  },
+  lam_jalalah_tarqeeq: {
+    id: "lam_jalalah_tarqeeq",
+    nameArabic: "لام لَفْظ الجَلَالَة - تَرْقِيق",
+    nameEnglish: "Lam Lafdhul Jalalah - Tarqeeq",
+    color: "#0369a1",
+    bgColor: "rgba(3, 105, 161, 0.15)",
+    description: {
+      ar: "ترقيق لام لفظ الجلالة (الله) إذا سبقها كسر",
+      en: "Light pronunciation of Lam in Allah's name when preceded by Kasra",
+      ur: "اللہ کے لفظ میں لام کو باریک پڑھنا جب کسرہ سے پہلے ہو",
+    },
+    examples: ["بِسْمِ اللَّهِ", "عَبْدِ اللَّهِ"],
+    difficulty: "intermediate",
+    colorFamily: "lam-jalalah-blue",
+  },
+  istila: {
+    id: "istila",
+    nameArabic: "اِسْتِعْلَاء",
+    nameEnglish: "Isti'la",
+    color: "#d97706",
+    bgColor: "rgba(217, 119, 6, 0.15)",
+    description: {
+      ar: "صفة الاستعلاء وهي ارتفاع اللسان إلى الحنك الأعلى (خ ص ض غ ط ق ظ)",
+      en: "Elevation characteristic - raising the tongue to the upper palate",
+      ur: "بلندی کی صفت - زبان کو اوپری تالو کی طرف اٹھانا",
+    },
+    examples: ["خَالِق", "صَادِق", "ضَالِّين", "غَفُور", "طَيِّب", "قَوِيّ", "ظَالِم"],
+    difficulty: "advanced",
+    colorFamily: "sifaat-amber",
+  },
+  istifal: {
+    id: "istifal",
+    nameArabic: "اِسْتِفَال",
+    nameEnglish: "Istifal",
+    color: "#0ea5e9",
+    bgColor: "rgba(14, 165, 233, 0.15)",
+    description: {
+      ar: "صفة الاستفال وهي انخفاض اللسان إلى قاع الفم",
+      en: "Lowering characteristic - lowering the tongue to the bottom of the mouth",
+      ur: "پستی کی صفت - زبان کو منہ کی تہہ کی طرف نیچے کرنا",
+    },
+    examples: ["بَاب", "تَاب", "ثَوَاب", "جَنَّة", "دَار"],
+    difficulty: "advanced",
+    colorFamily: "sifaat-sky",
   },
   silent: {
     id: "silent",
@@ -197,6 +631,7 @@ export const TAJWEED_RULES: Record<TajweedRule, TajweedRuleInfo> = {
       ur: "ساکن حرف",
     },
     examples: ["اْ", "وْ", "يْ"],
+    difficulty: "basic",
   },
   normal: {
     id: "normal",
@@ -210,6 +645,7 @@ export const TAJWEED_RULES: Record<TajweedRule, TajweedRuleInfo> = {
       ur: "عام تلفظ",
     },
     examples: [],
+    difficulty: "basic",
   },
 }
 
