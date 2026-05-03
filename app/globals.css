@@ -46,6 +46,126 @@
   --page-border: oklch(0.75 0.08 55);
   --gold-accent: oklch(0.7 0.15 85);
 
+  /* Tajweed Color System - Light Mode */
+  /* Basic Noon Sakinah and Tanween Rules */
+  --tajweed-ghunnah: #16a34a;
+  --tajweed-ghunnah-bg: rgba(22, 163, 74, 0.15);
+  --tajweed-ikhfa: #ea580c;
+  --tajweed-ikhfa-bg: rgba(234, 88, 12, 0.15);
+  --tajweed-idgham: #9333ea;
+  --tajweed-idgham-bg: rgba(147, 51, 234, 0.15);
+  --tajweed-idgham-ghunnah: #a855f7;
+  --tajweed-idgham-ghunnah-bg: rgba(168, 85, 247, 0.15);
+  --tajweed-idgham-no-ghunnah: #7c3aed;
+  --tajweed-idgham-no-ghunnah-bg: rgba(124, 58, 237, 0.15);
+  --tajweed-iqlab: #0891b2;
+  --tajweed-iqlab-bg: rgba(8, 145, 178, 0.15);
+  --tajweed-izhar: #65a30d;
+  --tajweed-izhar-bg: rgba(101, 163, 13, 0.15);
+  --tajweed-izhar-halqi: #84cc16;
+  --tajweed-izhar-halqi-bg: rgba(132, 204, 22, 0.15);
+
+  /* Meem Sakinah Rules */
+  --tajweed-ikhfa-shafawi: #f97316;
+  --tajweed-ikhfa-shafawi-bg: rgba(249, 115, 22, 0.15);
+  --tajweed-idgham-shafawi: #c026d3;
+  --tajweed-idgham-shafawi-bg: rgba(192, 38, 211, 0.15);
+  --tajweed-izhar-shafawi: #84cc16;
+  --tajweed-izhar-shafawi-bg: rgba(132, 204, 22, 0.15);
+
+  /* Qalqalah Rules */
+  --tajweed-qalqalah: #2563eb;
+  --tajweed-qalqalah-bg: rgba(37, 99, 235, 0.15);
+  --tajweed-qalqalah-sughra: #3b82f6;
+  --tajweed-qalqalah-sughra-bg: rgba(59, 130, 246, 0.15);
+  --tajweed-qalqalah-kubra: #1d4ed8;
+  --tajweed-qalqalah-kubra-bg: rgba(29, 78, 216, 0.15);
+
+  /* Madd (Prolongation) Rules */
+  --tajweed-madd: #dc2626;
+  --tajweed-madd-bg: rgba(220, 38, 38, 0.15);
+  --tajweed-madd-tabii: #ef4444;
+  --tajweed-madd-tabii-bg: rgba(239, 68, 68, 0.15);
+  --tajweed-madd-lazim: #be123c;
+  --tajweed-madd-lazim-bg: rgba(190, 18, 60, 0.15);
+  --tajweed-madd-muttasil: #e11d48;
+  --tajweed-madd-muttasil-bg: rgba(225, 29, 72, 0.15);
+  --tajweed-madd-munfasil: #f43f5e;
+  --tajweed-madd-munfasil-bg: rgba(244, 63, 94, 0.15);
+  --tajweed-madd-badal: #fb7185;
+  --tajweed-madd-badal-bg: rgba(251, 113, 133, 0.15);
+  --tajweed-madd-arid: #fda4af;
+  --tajweed-madd-arid-bg: rgba(253, 164, 175, 0.15);
+  --tajweed-madd-leen: #fecdd3;
+  --tajweed-madd-leen-bg: rgba(254, 205, 211, 0.15);
+  --tajweed-madd-silah-sughra: #f87171;
+  --tajweed-madd-silah-sughra-bg: rgba(248, 113, 113, 0.15);
+  --tajweed-madd-silah-kubra: #dc2626;
+  --tajweed-madd-silah-kubra-bg: rgba(220, 38, 38, 0.15);
+  --tajweed-madd-iwad: #fca5a5;
+  --tajweed-madd-iwad-bg: rgba(252, 165, 165, 0.15);
+  --tajweed-madd-tamkeen: #b91c1c;
+  --tajweed-madd-tamkeen-bg: rgba(185, 28, 28, 0.15);
+  --tajweed-madd-farq: #991b1b;
+  --tajweed-madd-farq-bg: rgba(153, 27, 27, 0.15);
+
+  /* Ra Rules */
+  --tajweed-ra-tafkheem: #b45309;
+  --tajweed-ra-tafkheem-bg: rgba(180, 83, 9, 0.15);
+  --tajweed-ra-tarqeeq: #06b6d4;
+  --tajweed-ra-tarqeeq-bg: rgba(6, 182, 212, 0.15);
+
+  /* Lam Rules */
+  --tajweed-lam-shamsiyyah: #ca8a04;
+  --tajweed-lam-shamsiyyah-bg: rgba(202, 138, 4, 0.15);
+  --tajweed-lam-qamariyyah: #0284c7;
+  --tajweed-lam-qamariyyah-bg: rgba(2, 132, 199, 0.15);
+  --tajweed-lam-jalalah-tafkheem: #92400e;
+  --tajweed-lam-jalalah-tafkheem-bg: rgba(146, 64, 14, 0.15);
+  --tajweed-lam-jalalah-tarqeeq: #0369a1;
+  --tajweed-lam-jalalah-tarqeeq-bg: rgba(3, 105, 161, 0.15);
+
+  /* Sifaat (Characteristics) */
+  --tajweed-istila: #d97706;
+  --tajweed-istila-bg: rgba(217, 119, 6, 0.15);
+  --tajweed-istifal: #0ea5e9;
+  --tajweed-istifal-bg: rgba(14, 165, 233, 0.15);
+  --tajweed-hams: #94a3b8;
+  --tajweed-hams-bg: rgba(148, 163, 184, 0.15);
+  --tajweed-jahr: #475569;
+  --tajweed-jahr-bg: rgba(71, 85, 105, 0.15);
+
+  /* Waqf (Stopping) Signs */
+  --tajweed-waqf-lazim: #dc2626;
+  --tajweed-waqf-lazim-bg: rgba(220, 38, 38, 0.15);
+  --tajweed-waqf-jaiz: #16a34a;
+  --tajweed-waqf-jaiz-bg: rgba(22, 163, 74, 0.15);
+  --tajweed-waqf-mamnu: #ef4444;
+  --tajweed-waqf-mamnu-bg: rgba(239, 68, 68, 0.15);
+  --tajweed-waqf-mujawwaz: #eab308;
+  --tajweed-waqf-mujawwaz-bg: rgba(234, 179, 8, 0.15);
+
+  /* Special States */
+  --tajweed-silent: #64748b;
+  --tajweed-silent-bg: rgba(100, 116, 139, 0.1);
+  --tajweed-sukoon: #64748b;
+  --tajweed-sukoon-bg: rgba(100, 116, 139, 0.1);
+  --tajweed-shaddah: #334155;
+  --tajweed-shaddah-bg: rgba(51, 65, 85, 0.15);
+  --tajweed-tanween: #475569;
+  --tajweed-tanween-bg: rgba(71, 85, 105, 0.15);
+
+  /* Highlight and Active States */
+  --tajweed-highlight: rgba(234, 179, 8, 0.25);
+  --tajweed-active: rgba(37, 99, 235, 0.3);
+  --tajweed-focus: rgba(59, 130, 246, 0.4);
+  --tajweed-hover: rgba(0, 0, 0, 0.05);
+
+  /* Intensity Levels */
+  --tajweed-intensity-low: 0.08;
+  --tajweed-intensity-medium: 0.15;
+  --tajweed-intensity-high: 0.25;
+
   /* Sidebar */
   --sidebar: oklch(0.96 0.01 85);
   --sidebar-foreground: oklch(0.25 0.02 45);
@@ -91,6 +211,105 @@
   --sidebar-accent-foreground: oklch(0.88 0.01 85);
   --sidebar-border: oklch(0.28 0.02 260);
   --sidebar-ring: oklch(0.65 0.12 160);
+
+  /* Tajweed Color System - Dark Mode (Higher Contrast) */
+  --tajweed-ghunnah: #22c55e;
+  --tajweed-ghunnah-bg: rgba(34, 197, 94, 0.2);
+  --tajweed-ikhfa: #fb923c;
+  --tajweed-ikhfa-bg: rgba(251, 146, 60, 0.2);
+  --tajweed-idgham: #a855f7;
+  --tajweed-idgham-bg: rgba(168, 85, 247, 0.2);
+  --tajweed-idgham-ghunnah: #c084fc;
+  --tajweed-idgham-ghunnah-bg: rgba(192, 132, 252, 0.2);
+  --tajweed-idgham-no-ghunnah: #9333ea;
+  --tajweed-idgham-no-ghunnah-bg: rgba(147, 51, 234, 0.2);
+  --tajweed-iqlab: #22d3ee;
+  --tajweed-iqlab-bg: rgba(34, 211, 238, 0.2);
+  --tajweed-izhar: #84cc16;
+  --tajweed-izhar-bg: rgba(132, 204, 22, 0.2);
+  --tajweed-izhar-halqi: #a3e635;
+  --tajweed-izhar-halqi-bg: rgba(163, 230, 53, 0.2);
+  --tajweed-ikhfa-shafawi: #fb923c;
+  --tajweed-ikhfa-shafawi-bg: rgba(251, 146, 60, 0.2);
+  --tajweed-idgham-shafawi: #d946ef;
+  --tajweed-idgham-shafawi-bg: rgba(217, 70, 239, 0.2);
+  --tajweed-izhar-shafawi: #a3e635;
+  --tajweed-izhar-shafawi-bg: rgba(163, 230, 53, 0.2);
+  --tajweed-qalqalah: #3b82f6;
+  --tajweed-qalqalah-bg: rgba(59, 130, 246, 0.2);
+  --tajweed-qalqalah-sughra: #60a5fa;
+  --tajweed-qalqalah-sughra-bg: rgba(96, 165, 250, 0.2);
+  --tajweed-qalqalah-kubra: #2563eb;
+  --tajweed-qalqalah-kubra-bg: rgba(37, 99, 235, 0.2);
+  --tajweed-madd: #f87171;
+  --tajweed-madd-bg: rgba(248, 113, 113, 0.2);
+  --tajweed-madd-tabii: #fca5a5;
+  --tajweed-madd-tabii-bg: rgba(252, 165, 165, 0.2);
+  --tajweed-madd-lazim: #e11d48;
+  --tajweed-madd-lazim-bg: rgba(225, 29, 72, 0.2);
+  --tajweed-madd-muttasil: #f43f5e;
+  --tajweed-madd-muttasil-bg: rgba(244, 63, 94, 0.2);
+  --tajweed-madd-munfasil: #fb7185;
+  --tajweed-madd-munfasil-bg: rgba(251, 113, 133, 0.2);
+  --tajweed-madd-badal: #fda4af;
+  --tajweed-madd-badal-bg: rgba(253, 164, 175, 0.2);
+  --tajweed-madd-arid: #fecdd3;
+  --tajweed-madd-arid-bg: rgba(254, 205, 211, 0.2);
+  --tajweed-madd-leen: #ffe4e6;
+  --tajweed-madd-leen-bg: rgba(255, 228, 230, 0.2);
+  --tajweed-madd-silah-sughra: #fca5a5;
+  --tajweed-madd-silah-sughra-bg: rgba(252, 165, 165, 0.2);
+  --tajweed-madd-silah-kubra: #f87171;
+  --tajweed-madd-silah-kubra-bg: rgba(248, 113, 113, 0.2);
+  --tajweed-madd-iwad: #fecdd3;
+  --tajweed-madd-iwad-bg: rgba(254, 205, 211, 0.2);
+  --tajweed-madd-tamkeen: #dc2626;
+  --tajweed-madd-tamkeen-bg: rgba(220, 38, 38, 0.2);
+  --tajweed-madd-farq: #b91c1c;
+  --tajweed-madd-farq-bg: rgba(185, 28, 28, 0.2);
+  --tajweed-ra-tafkheem: #d97706;
+  --tajweed-ra-tafkheem-bg: rgba(217, 119, 6, 0.2);
+  --tajweed-ra-tarqeeq: #22d3ee;
+  --tajweed-ra-tarqeeq-bg: rgba(34, 211, 238, 0.2);
+  --tajweed-lam-shamsiyyah: #eab308;
+  --tajweed-lam-shamsiyyah-bg: rgba(234, 179, 8, 0.2);
+  --tajweed-lam-qamariyyah: #38bdf8;
+  --tajweed-lam-qamariyyah-bg: rgba(56, 189, 248, 0.2);
+  --tajweed-lam-jalalah-tafkheem: #b45309;
+  --tajweed-lam-jalalah-tafkheem-bg: rgba(180, 83, 9, 0.2);
+  --tajweed-lam-jalalah-tarqeeq: #0ea5e9;
+  --tajweed-lam-jalalah-tarqeeq-bg: rgba(14, 165, 233, 0.2);
+  --tajweed-istila: #f59e0b;
+  --tajweed-istila-bg: rgba(245, 158, 11, 0.2);
+  --tajweed-istifal: #38bdf8;
+  --tajweed-istifal-bg: rgba(56, 189, 248, 0.2);
+  --tajweed-hams: #cbd5e1;
+  --tajweed-hams-bg: rgba(203, 213, 225, 0.2);
+  --tajweed-jahr: #94a3b8;
+  --tajweed-jahr-bg: rgba(148, 163, 184, 0.2);
+  --tajweed-waqf-lazim: #f87171;
+  --tajweed-waqf-lazim-bg: rgba(248, 113, 113, 0.2);
+  --tajweed-waqf-jaiz: #4ade80;
+  --tajweed-waqf-jaiz-bg: rgba(74, 222, 128, 0.2);
+  --tajweed-waqf-mamnu: #fca5a5;
+  --tajweed-waqf-mamnu-bg: rgba(252, 165, 165, 0.2);
+  --tajweed-waqf-mujawwaz: #fbbf24;
+  --tajweed-waqf-mujawwaz-bg: rgba(251, 191, 36, 0.2);
+  --tajweed-silent: #94a3b8;
+  --tajweed-silent-bg: rgba(148, 163, 184, 0.15);
+  --tajweed-sukoon: #94a3b8;
+  --tajweed-sukoon-bg: rgba(148, 163, 184, 0.15);
+  --tajweed-shaddah: #cbd5e1;
+  --tajweed-shaddah-bg: rgba(203, 213, 225, 0.2);
+  --tajweed-tanween: #94a3b8;
+  --tajweed-tanween-bg: rgba(148, 163, 184, 0.2);
+  --tajweed-highlight: rgba(234, 179, 8, 0.3);
+  --tajweed-active: rgba(59, 130, 246, 0.35);
+  --tajweed-focus: rgba(96, 165, 250, 0.45);
+  --tajweed-hover: rgba(255, 255, 255, 0.08);
+  --tajweed-intensity-low: 0.1;
+  --tajweed-intensity-medium: 0.2;
+  --tajweed-intensity-high: 0.3;
 }
 
 .sepia {
@@ -102,6 +321,105 @@
   --surah-header: oklch(0.45 0.12 45);
   --page-border: oklch(0.7 0.1 55);
   --gold-accent: oklch(0.65 0.18 75);
+
+  /* Tajweed Color System - Sepia Mode */
+  --tajweed-ghunnah: #15803d;
+  --tajweed-ghunnah-bg: rgba(21, 128, 61, 0.12);
+  --tajweed-ikhfa: #c2410c;
+  --tajweed-ikhfa-bg: rgba(194, 65, 12, 0.12);
+  --tajweed-idgham: #7e22ce;
+  --tajweed-idgham-bg: rgba(126, 34, 206, 0.12);
+  --tajweed-idgham-ghunnah: #9333ea;
+  --tajweed-idgham-ghunnah-bg: rgba(147, 51, 234, 0.12);
+  --tajweed-idgham-no-ghunnah: #6b21a8;
+  --tajweed-idgham-no-ghunnah-bg: rgba(107, 33, 168, 0.12);
+  --tajweed-iqlab: #0e7490;
+  --tajweed-iqlab-bg: rgba(14, 116, 144, 0.12);
+  --tajweed-izhar: #4d7c0f;
+  --tajweed-izhar-bg: rgba(77, 124, 15, 0.12);
+  --tajweed-izhar-halqi: #65a30d;
+  --tajweed-izhar-halqi-bg: rgba(101, 163, 13, 0.12);
+  --tajweed-ikhfa-shafawi: #c2410c;
+  --tajweed-ikhfa-shafawi-bg: rgba(194, 65, 12, 0.12);
+  --tajweed-idgham-shafawi: #a21caf;
+  --tajweed-idgham-shafawi-bg: rgba(162, 28, 175, 0.12);
+  --tajweed-izhar-shafawi: #65a30d;
+  --tajweed-izhar-shafawi-bg: rgba(101, 163, 13, 0.12);
+  --tajweed-qalqalah: #1e40af;
+  --tajweed-qalqalah-bg: rgba(30, 64, 175, 0.12);
+  --tajweed-qalqalah-sughra: #2563eb;
+  --tajweed-qalqalah-sughra-bg: rgba(37, 99, 235, 0.12);
+  --tajweed-qalqalah-kubra: #1e3a8a;
+  --tajweed-qalqalah-kubra-bg: rgba(30, 58, 138, 0.12);
+  --tajweed-madd: #b91c1c;
+  --tajweed-madd-bg: rgba(185, 28, 28, 0.12);
+  --tajweed-madd-tabii: #dc2626;
+  --tajweed-madd-tabii-bg: rgba(220, 38, 38, 0.12);
+  --tajweed-madd-lazim: #9f1239;
+  --tajweed-madd-lazim-bg: rgba(159, 18, 57, 0.12);
+  --tajweed-madd-muttasil: #be123c;
+  --tajweed-madd-muttasil-bg: rgba(190, 18, 60, 0.12);
+  --tajweed-madd-munfasil: #e11d48;
+  --tajweed-madd-munfasil-bg: rgba(225, 29, 72, 0.12);
+  --tajweed-madd-badal: #f43f5e;
+  --tajweed-madd-badal-bg: rgba(244, 63, 94, 0.12);
+  --tajweed-madd-arid: #fb7185;
+  --tajweed-madd-arid-bg: rgba(251, 113, 133, 0.12);
+  --tajweed-madd-leen: #fda4af;
+  --tajweed-madd-leen-bg: rgba(253, 164, 175, 0.12);
+  --tajweed-madd-silah-sughra: #f87171;
+  --tajweed-madd-silah-sughra-bg: rgba(248, 113, 113, 0.12);
+  --tajweed-madd-silah-kubra: #dc2626;
+  --tajweed-madd-silah-kubra-bg: rgba(220, 38, 38, 0.12);
+  --tajweed-madd-iwad: #fca5a5;
+  --tajweed-madd-iwad-bg: rgba(252, 165, 165, 0.12);
+  --tajweed-madd-tamkeen: #991b1b;
+  --tajweed-madd-tamkeen-bg: rgba(153, 27, 27, 0.12);
+  --tajweed-madd-farq: #7f1d1d;
+  --tajweed-madd-farq-bg: rgba(127, 29, 29, 0.12);
+  --tajweed-ra-tafkheem: #92400e;
+  --tajweed-ra-tafkheem-bg: rgba(146, 64, 14, 0.12);
+  --tajweed-ra-tarqeeq: #0e7490;
+  --tajweed-ra-tarqeeq-bg: rgba(14, 116, 144, 0.12);
+  --tajweed-lam-shamsiyyah: #a16207;
+  --tajweed-lam-shamsiyyah-bg: rgba(161, 98, 7, 0.12);
+  --tajweed-lam-qamariyyah: #075985;
+  --tajweed-lam-qamariyyah-bg: rgba(7, 89, 133, 0.12);
+  --tajweed-lam-jalalah-tafkheem: #78350f;
+  --tajweed-lam-jalalah-tafkheem-bg: rgba(120, 53, 15, 0.12);
+  --tajweed-lam-jalalah-tarqeeq: #0c4a6e;
+  --tajweed-lam-jalalah-tarqeeq-bg: rgba(12, 74, 110, 0.12);
+  --tajweed-istila: #b45309;
+  --tajweed-istila-bg: rgba(180, 83, 9, 0.12);
+  --tajweed-istifal: #0369a1;
+  --tajweed-istifal-bg: rgba(3, 105, 161, 0.12);
+  --tajweed-hams: #64748b;
+  --tajweed-hams-bg: rgba(100, 116, 139, 0.12);
+  --tajweed-jahr: #334155;
+  --tajweed-jahr-bg: rgba(51, 65, 85, 0.12);
+  --tajweed-waqf-lazim: #b91c1c;
+  --tajweed-waqf-lazim-bg: rgba(185, 28, 28, 0.12);
+  --tajweed-waqf-jaiz: #15803d;
+  --tajweed-waqf-jaiz-bg: rgba(21, 128, 61, 0.12);
+  --tajweed-waqf-mamnu: #dc2626;
+  --tajweed-waqf-mamnu-bg: rgba(220, 38, 38, 0.12);
+  --tajweed-waqf-mujawwaz: #a16207;
+  --tajweed-waqf-mujawwaz-bg: rgba(161, 98, 7, 0.12);
+  --tajweed-silent: #475569;
+  --tajweed-silent-bg: rgba(71, 85, 105, 0.08);
+  --tajweed-sukoon: #475569;
+  --tajweed-sukoon-bg: rgba(71, 85, 105, 0.08);
+  --tajweed-shaddah: #1e293b;
+  --tajweed-shaddah-bg: rgba(30, 41, 59, 0.12);
+  --tajweed-tanween: #334155;
+  --tajweed-tanween-bg: rgba(51, 65, 85, 0.12);
+  --tajweed-highlight: rgba(161, 98, 7, 0.2);
+  --tajweed-active: rgba(30, 64, 175, 0.25);
+  --tajweed-focus: rgba(37, 99, 235, 0.35);
+  --tajweed-hover: rgba(0, 0, 0, 0.04);
+  --tajweed-intensity-low: 0.08;
+  --tajweed-intensity-medium: 0.12;
+  --tajweed-intensity-high: 0.2;
 }
 
 @theme inline {
@@ -409,4 +727,416 @@
 
 .pulse-gold {
   animation: pulse-gold 2s infinite;
+}
+
+/* High Contrast Mode for Accessibility */
+@media (prefers-contrast: high) {
+  :root {
+    --tajweed-ghunnah: #15803d;
+    --tajweed-ghunnah-bg: rgba(21, 128, 61, 0.25);
+    --tajweed-ikhfa: #c2410c;
+    --tajweed-ikhfa-bg: rgba(194, 65, 12, 0.25);
+    --tajweed-idgham: #7e22ce;
+    --tajweed-idgham-bg: rgba(126, 34, 206, 0.25);
+    --tajweed-iqlab: #0e7490;
+    --tajweed-iqlab-bg: rgba(14, 116, 144, 0.25);
+    --tajweed-qalqalah: #1e40af;
+    --tajweed-qalqalah-bg: rgba(30, 64, 175, 0.25);
+    --tajweed-madd: #b91c1c;
+    --tajweed-madd-bg: rgba(185, 28, 28, 0.25);
+    --tajweed-intensity-low: 0.15;
+    --tajweed-intensity-medium: 0.25;
+    --tajweed-intensity-high: 0.35;
+  }
+}
+
+/* Reduced Motion Support */
+@media (prefers-reduced-motion: reduce) {
+  .tajweed-transition,
+  .tajweed-animate,
+  [class*="tajweed-"] {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* Tajweed Utility Classes */
+.tajweed-ghunnah {
+  color: var(--tajweed-ghunnah);
+  background-color: var(--tajweed-ghunnah-bg);
+}
+
+.tajweed-ikhfa {
+  color: var(--tajweed-ikhfa);
+  background-color: var(--tajweed-ikhfa-bg);
+}
+
+.tajweed-idgham {
+  color: var(--tajweed-idgham);
+  background-color: var(--tajweed-idgham-bg);
+}
+
+.tajweed-idgham-ghunnah {
+  color: var(--tajweed-idgham-ghunnah);
+  background-color: var(--tajweed-idgham-ghunnah-bg);
+}
+
+.tajweed-idgham-no-ghunnah {
+  color: var(--tajweed-idgham-no-ghunnah);
+  background-color: var(--tajweed-idgham-no-ghunnah-bg);
+}
+
+.tajweed-iqlab {
+  color: var(--tajweed-iqlab);
+  background-color: var(--tajweed-iqlab-bg);
+}
+
+.tajweed-izhar {
+  color: var(--tajweed-izhar);
+  background-color: var(--tajweed-izhar-bg);
+}
+
+.tajweed-izhar-halqi {
+  color: var(--tajweed-izhar-halqi);
+  background-color: var(--tajweed-izhar-halqi-bg);
+}
+
+.tajweed-ikhfa-shafawi {
+  color: var(--tajweed-ikhfa-shafawi);
+  background-color: var(--tajweed-ikhfa-shafawi-bg);
+}
+
+.tajweed-idgham-shafawi {
+  color: var(--tajweed-idgham-shafawi);
+  background-color: var(--tajweed-idgham-shafawi-bg);
+}
+
+.tajweed-izhar-shafawi {
+  color: var(--tajweed-izhar-shafawi);
+  background-color: var(--tajweed-izhar-shafawi-bg);
+}
+
+.tajweed-qalqalah {
+  color: var(--tajweed-qalqalah);
+  background-color: var(--tajweed-qalqalah-bg);
+}
+
+.tajweed-qalqalah-sughra {
+  color: var(--tajweed-qalqalah-sughra);
+  background-color: var(--tajweed-qalqalah-sughra-bg);
+}
+
+.tajweed-qalqalah-kubra {
+  color: var(--tajweed-qalqalah-kubra);
+  background-color: var(--tajweed-qalqalah-kubra-bg);
+}
+
+.tajweed-madd {
+  color: var(--tajweed-madd);
+  background-color: var(--tajweed-madd-bg);
+}
+
+.tajweed-madd-tabii {
+  color: var(--tajweed-madd-tabii);
+  background-color: var(--tajweed-madd-tabii-bg);
+}
+
+.tajweed-madd-lazim {
+  color: var(--tajweed-madd-lazim);
+  background-color: var(--tajweed-madd-lazim-bg);
+}
+
+.tajweed-madd-muttasil {
+  color: var(--tajweed-madd-muttasil);
+  background-color: var(--tajweed-madd-muttasil-bg);
+}
+
+.tajweed-madd-munfasil {
+  color: var(--tajweed-madd-munfasil);
+  background-color: var(--tajweed-madd-munfasil-bg);
+}
+
+.tajweed-madd-badal {
+  color: var(--tajweed-madd-badal);
+  background-color: var(--tajweed-madd-badal-bg);
+}
+
+.tajweed-madd-arid {
+  color: var(--tajweed-madd-arid);
+  background-color: var(--tajweed-madd-arid-bg);
+}
+
+.tajweed-madd-leen {
+  color: var(--tajweed-madd-leen);
+  background-color: var(--tajweed-madd-leen-bg);
+}
+
+.tajweed-madd-silah-sughra {
+  color: var(--tajweed-madd-silah-sughra);
+  background-color: var(--tajweed-madd-silah-sughra-bg);
+}
+
+.tajweed-madd-silah-kubra {
+  color: var(--tajweed-madd-silah-kubra);
+  background-color: var(--tajweed-madd-silah-kubra-bg);
+}
+
+.tajweed-madd-iwad {
+  color: var(--tajweed-madd-iwad);
+  background-color: var(--tajweed-madd-iwad-bg);
+}
+
+.tajweed-madd-tamkeen {
+  color: var(--tajweed-madd-tamkeen);
+  background-color: var(--tajweed-madd-tamkeen-bg);
+}
+
+.tajweed-madd-farq {
+  color: var(--tajweed-madd-farq);
+  background-color: var(--tajweed-madd-farq-bg);
+}
+
+.tajweed-ra-tafkheem {
+  color: var(--tajweed-ra-tafkheem);
+  background-color: var(--tajweed-ra-tafkheem-bg);
+}
+
+.tajweed-ra-tarqeeq {
+  color: var(--tajweed-ra-tarqeeq);
+  background-color: var(--tajweed-ra-tarqeeq-bg);
+}
+
+.tajweed-lam-shamsiyyah {
+  color: var(--tajweed-lam-shamsiyyah);
+  background-color: var(--tajweed-lam-shamsiyyah-bg);
+}
+
+.tajweed-lam-qamariyyah {
+  color: var(--tajweed-lam-qamariyyah);
+  background-color: var(--tajweed-lam-qamariyyah-bg);
+}
+
+.tajweed-lam-jalalah-tafkheem {
+  color: var(--tajweed-lam-jalalah-tafkheem);
+  background-color: var(--tajweed-lam-jalalah-tafkheem-bg);
+}
+
+.tajweed-lam-jalalah-tarqeeq {
+  color: var(--tajweed-lam-jalalah-tarqeeq);
+  background-color: var(--tajweed-lam-jalalah-tarqeeq-bg);
+}
+
+.tajweed-istila {
+  color: var(--tajweed-istila);
+  background-color: var(--tajweed-istila-bg);
+}
+
+.tajweed-istifal {
+  color: var(--tajweed-istifal);
+  background-color: var(--tajweed-istifal-bg);
+}
+
+.tajweed-hams {
+  color: var(--tajweed-hams);
+  background-color: var(--tajweed-hams-bg);
+}
+
+.tajweed-jahr {
+  color: var(--tajweed-jahr);
+  background-color: var(--tajweed-jahr-bg);
+}
+
+.tajweed-waqf-lazim {
+  color: var(--tajweed-waqf-lazim);
+  background-color: var(--tajweed-waqf-lazim-bg);
+}
+
+.tajweed-waqf-jaiz {
+  color: var(--tajweed-waqf-jaiz);
+  background-color: var(--tajweed-waqf-jaiz-bg);
+}
+
+.tajweed-waqf-mamnu {
+  color: var(--tajweed-waqf-mamnu);
+  background-color: var(--tajweed-waqf-mamnu-bg);
+}
+
+.tajweed-waqf-mujawwaz {
+  color: var(--tajweed-waqf-mujawwaz);
+  background-color: var(--tajweed-waqf-mujawwaz-bg);
+}
+
+.tajweed-silent {
+  color: var(--tajweed-silent);
+  background-color: var(--tajweed-silent-bg);
+}
+
+.tajweed-sukoon {
+  color: var(--tajweed-sukoon);
+  background-color: var(--tajweed-sukoon-bg);
+}
+
+.tajweed-shaddah {
+  color: var(--tajweed-shaddah);
+  background-color: var(--tajweed-shaddah-bg);
+}
+
+.tajweed-tanween {
+  color: var(--tajweed-tanween);
+  background-color: var(--tajweed-tanween-bg);
+}
+
+.tajweed-normal {
+  color: inherit;
+  background-color: transparent;
+}
+
+/* Intensity Variations */
+.tajweed-intensity-low {
+  opacity: var(--tajweed-intensity-low);
+}
+
+.tajweed-intensity-medium {
+  opacity: var(--tajweed-intensity-medium);
+}
+
+.tajweed-intensity-high {
+  opacity: var(--tajweed-intensity-high);
+}
+
+/* Highlight States */
+.tajweed-highlight {
+  background-color: var(--tajweed-highlight) !important;
+  border-radius: 3px;
+  padding: 1px 2px;
+}
+
+.tajweed-active {
+  background-color: var(--tajweed-active) !important;
+  border-radius: 3px;
+  padding: 1px 2px;
+  box-shadow: 0 0 0 2px var(--tajweed-focus);
+}
+
+/* Disabled State */
+.tajweed-disabled,
+.tajweed-colors-off [class*="tajweed-"] {
+  color: inherit !important;
+  background-color: transparent !important;
+}
+
+/* Base Tajweed Styling */
+[class*="tajweed-"] {
+  border-radius: 2px;
+  padding: 0 1px;
+  transition: background-color 0.2s ease, color 0.2s ease, box-shadow 0.2s ease;
+  will-change: background-color;
+}
+
+/* Hover Effects */
+[class*="tajweed-"]:hover {
+  background-color: var(--tajweed-hover);
+  cursor: pointer;
+}
+
+/* Focus States for Accessibility */
+[class*="tajweed-"]:focus {
+  outline: 2px solid var(--tajweed-focus);
+  outline-offset: 2px;
+  border-radius: 3px;
+}
+
+[class*="tajweed-"]:focus-visible {
+  outline: 2px solid var(--tajweed-focus);
+  outline-offset: 2px;
+}
+
+/* Animation Classes */
+.tajweed-transition {
+  transition: all 0.3s ease;
+}
+
+.tajweed-fade-in {
+  animation: tajweedFadeIn 0.3s ease-out forwards;
+}
+
+@keyframes tajweedFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(2px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.tajweed-pulse {
+  animation: tajweedPulse 2s ease-in-out infinite;
+}
+
+@keyframes tajweedPulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}
+
+/* RTL Support */
+[dir="rtl"] [class*="tajweed-"] {
+  text-align: right;
+}
+
+/* Mobile Optimizations - Higher Contrast */
+@media (max-width: 640px) {
+  [class*="tajweed-"] {
+    padding: 1px 2px;
+  }
+
+  :root {
+    --tajweed-intensity-low: 0.12;
+    --tajweed-intensity-medium: 0.2;
+    --tajweed-intensity-high: 0.3;
+  }
+}
+
+/* Print Styles - Grayscale with Patterns */
+@media print {
+  [class*="tajweed-"] {
+    color: #000 !important;
+    background-color: transparent !important;
+  }
+
+  .tajweed-ghunnah {
+    text-decoration: underline;
+    text-decoration-style: wavy;
+  }
+
+  .tajweed-ikhfa {
+    text-decoration: underline;
+    text-decoration-style: dotted;
+  }
+
+  .tajweed-idgham {
+    text-decoration: underline;
+    text-decoration-style: double;
+  }
+
+  .tajweed-qalqalah {
+    font-weight: bold;
+  }
+
+  .tajweed-madd,
+  .tajweed-madd-lazim,
+  .tajweed-madd-muttasil,
+  .tajweed-madd-munfasil {
+    text-decoration: overline;
+  }
+
+  .tajweed-iqlab {
+    border-bottom: 1px solid #000;
+  }
 }
