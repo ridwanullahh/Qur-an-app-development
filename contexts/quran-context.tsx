@@ -7,6 +7,7 @@ import type React from "react"
 import { createContext, useContext, useState, useCallback, useMemo } from "react"
 import { SURAHS, type Surah } from "@/lib/quran-data"
 import { ALL_VERSES, type Verse } from "@/lib/quran-verses"
+import { type TajweedRule } from "@/lib/tajweed"
 
 interface QuranSettings {
   fontSize: number
@@ -18,6 +19,10 @@ interface QuranSettings {
   theme: "light" | "dark" | "sepia"
   pageView: "mushaf" | "list"
   wordByWord: boolean
+  showTajweed: boolean
+  tajweedRules: Record<TajweedRule, boolean>
+  tajweedDifficulty: "basic" | "intermediate" | "advanced"
+  tajweedColorIntensity: number
 }
 
 interface QuranContextType {
@@ -68,6 +73,25 @@ const defaultSettings: QuranSettings = {
   theme: "light",
   pageView: "mushaf",
   wordByWord: false,
+  showTajweed: true,
+  tajweedRules: {
+    ghunnah: true,
+    ikhfa: true,
+    idgham: true,
+    iqlab: true,
+    qalqalah: true,
+    madd: true,
+    madd_lazim: true,
+    madd_muttasil: true,
+    madd_munfasil: true,
+    izhar: true,
+    lam_shamsiyyah: true,
+    lam_qamariyyah: true,
+    silent: true,
+    normal: true,
+  },
+  tajweedDifficulty: "basic",
+  tajweedColorIntensity: 80,
 }
 
 const QuranContext = createContext<QuranContextType | undefined>(undefined)
