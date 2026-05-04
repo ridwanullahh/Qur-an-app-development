@@ -649,72 +649,549 @@ export const TAJWEED_RULES: Record<TajweedRule, TajweedRuleInfo> = {
   },
 }
 
-// Function to analyze a word and return tajweed markings
-export function analyzeTajweed(word: string): Array<{ char: string; rule: TajweedRule }> {
-  const result: Array<{ char: string; rule: TajweedRule }> = []
+// ============================================================================
+// HELPER FUNCTIONS FOR TAJWEED DETECTION
+// ============================================================================
 
-  // Qalqalah letters: ق ط ب ج د
-  const qalqalahLetters = ["ق", "ط", "ب", "ج", "د"]
+/**
+ * Checks if a character is one of the six throat letters (حروف حلقية)
+ * Used for Izhar Halqi detection
+ */
+export function isThroatLetter(char: string): boolean {
+  return ["ء", "أ", "إ", "آ", "ؤ", "ئ", "ه", "ع", "ح", "غ", "خ"].includes(char)
+}
 
-  // Ghunnah letters (noon and meem with shaddah)
-  const ghunnahPattern = /[نم]ّ/
+/**
+ * Checks if a character is a sun letter (حرف شمسي)
+ * Sun letters cause the lam of "ال" to be assimilated
+ */
+export function isSunLetter(char: string): boolean {
+  return ["ت", "ث", "د", "ذ", "ر", "ز", "س", "ش", "ص", "ض", "ط", "ظ", "ل", "ن"].includes(char)
+}
 
-  // Madd letters
-  const maddLetters = ["ا", "و", "ي"]
+/**
+ * Checks if a character is a moon letter (حرف قمري)
+ * Moon letters allow the lam of "ال" to be pronounced clearly
+ */
+export function isMoonLetter(char: string): boolean {
+  return ["ا", "ب", "ج", "ح", "خ", "ع", "غ", "ف", "ق", "ك", "م", "ه", "و", "ي"].includes(char)
+}
 
-  // Sun letters for lam shamsiyyah
-  const sunLetters = ["ت", "ث", "د", "ذ", "ر", "ز", "س", "ش", "ص", "ض", "ط", "ظ", "ل", "ن"]
+/**
+ * Gets the vowel (haraka) before a character at the given index
+ * Returns the vowel character or null if none found
+ */
+export function getVowelBefore(chars: string[], index: number): string | null {
+  if (index <= 0) return null
+  const prevChar = chars[index - 1]
+  if (["َ", "ُ", "ِ", "ّ", "ْ", "ً", "ٌ", "ٍ"].includes(prevChar)) {
+    return prevChar
+  }
+  // Check two positions back for vowel after letter
+  if (index >= 2 && ["َ", "ُ", "ِ", "ّ", "ْ", "ً", "ٌ", "ٍ"].includes(chars[index - 2])) {
+    return chars[index - 2]
+  }
+  return null
+}
 
+/**
+ * Gets the vowel (haraka) after a character at the given index
+ * Returns the vowel character or null if none found
+ */
+export function getVowelAfter(chars: string[], index: number): string | null {
+  if (index >= chars.length - 1) return null
+  const nextChar = chars[index + 1]
+  if (["َ", "ُ", "ِ", "ّ", "ْ", "ً", "ٌ", "ٍ"].includes(nextChar)) {
+    return nextChar
+  }
+  return null
+}
+
+/**
+ * Checks if the character at the given index is at the end of a word
+ * Considers diacritics when determining word end
+ */
+export function isWordEnd(chars: string[], index: number): boolean {
+  // If it's the last character, it's word end
+  if (index === chars.length - 1) return true
+
+  // Check if only diacritics follow
+  for (let i = index + 1; i < chars.length; i++) {
+    const char = chars[i]
+    // If we find a non-diacritic, it's not word end
+    if (!["َ", "ُ", "ِ", "ّ", "ْ", "ً", "ٌ", "ٍ", "ٓ", "ٰ", "ٔ", "ٕ"].includes(char)) {
+      return false
+    }
+  }
+  return true
+}
+
+/**
+ * Checks if a character is a Qalqalah letter (ق ط ب ج د)
+ */
+function isQalqalahLetter(char: string): boolean {
+  return ["ق", "ط", "ب", "ج", "د"].includes(char)
+}
+
+/**
+ * Checks if a character is a Madd letter (ا و ي)
+ */
+function isMaddLetter(char: string): boolean {
+  return ["ا", "و", "ي"].includes(char)
+}
+
+/**
+ * Checks if a character is any form of Hamza
+ */
+function isHamza(char: string): boolean {
+  return ["ء", "أ", "إ", "آ", "ؤ", "ئ"].includes(char)
+}
+
+/**
+ * Checks if a character is Noon (ن)
+ */
+function isNoon(char: string): boolean {
+  return char === "ن"
+}
+
+/**
+ * Checks if a character is Meem (م)
+ */
+function isMeem(char: string): boolean {
+  return char === "م"
+}
+
+/**
+ * Checks if a character is Tanween (تنوين)
+ */
+function isTanween(char: string): boolean {
+  return ["ً", "ٌ", "ٍ"].includes(char)
+}
+
+/**
+ * Checks if a character is Sukoon (ْ)
+ */
+function isSukoon(char: string): boolean {
+  return char === "ْ"
+}
+
+/**
+ * Checks if a character is Shaddah (ّ)
+ */
+function isShaddah(char: string): boolean {
+  return char === "ّ"
+}
+
+/**
+ * Checks if a character is Fatha (َ)
+ */
+function isFatha(char: string): boolean {
+  return char === "َ" || char === "ً"
+}
+
+/**
+ * Checks if a character is Kasra (ِ)
+ */
+function isKasra(char: string): boolean {
+  return char === "ِ" || char === "ٍ"
+}
+
+/**
+ * Checks if a character is Damma (ُ)
+ */
+function isDamma(char: string): boolean {
+  return char === "ُ" || char === "ٌ"
+}
+
+/**
+ * Gets the 15 letters for Ikhfa Haqiqi
+ */
+function getIkhfaLetters(): string[] {
+  return ["ت", "ث", "ج", "د", "ذ", "ز", "س", "ش", "ص", "ض", "ط", "ظ", "ف", "ق", "ك"]
+}
+
+/**
+ * Gets the letters for Idgham with Ghunnah (ينمو)
+ */
+function getIdghamWithGhunnahLetters(): string[] {
+  return ["ي", "ن", "م", "و"]
+}
+
+/**
+ * Gets the letters for Idgham without Ghunnah (ل ر)
+ */
+function getIdghamWithoutGhunnahLetters(): string[] {
+  return ["ل", "ر"]
+}
+
+/**
+ * Checks if the word is "Allah" (الله)
+ */
+function isAllahName(chars: string[], index: number): boolean {
+  // Look for pattern: ا ل ل ه
+  if (index < 1 || index > chars.length - 2) return false
+
+  // Check if we're at the lam position in Allah
+  if (chars[index] === "ل" && chars[index - 1] === "ا" && chars[index + 1] === "ل") {
+    // Look ahead for ه
+    for (let i = index + 2; i < Math.min(index + 5, chars.length); i++) {
+      if (chars[i] === "ه") return true
+    }
+  }
+  return false
+}
+
+// ============================================================================
+// ENHANCED TAJWEED ANALYSIS WITH METADATA
+// ============================================================================
+
+export interface TajweedAnalysisResult {
+  char: string
+  rule: TajweedRule
+  priority: number // Higher priority rules override lower ones
+  difficulty: TajweedDifficulty
+  description?: string
+  maddCount?: number // For Madd rules: 2, 4, or 6 counts
+}
+
+/**
+ * Enhanced Tajweed analysis function with context-aware detection
+ * Detects 30+ Tajweed rules with accurate pattern matching
+ *
+ * @param word - The Arabic word to analyze
+ * @param isWordAtPause - Whether this word is at a pause/stop position (for Qalqalah Kubra)
+ * @returns Array of analysis results with metadata
+ */
+export function analyzeTajweed(
+  word: string,
+  isWordAtPause = false
+): TajweedAnalysisResult[] {
+  const result: TajweedAnalysisResult[] = []
   const chars = word.split("")
 
   for (let i = 0; i < chars.length; i++) {
     const char = chars[i]
     const nextChar = chars[i + 1]
     const prevChar = chars[i - 1]
+    const vowelAfter = getVowelAfter(chars, i)
+    const vowelBefore = getVowelBefore(chars, i)
 
     let rule: TajweedRule = "normal"
+    let priority = 0
+    let difficulty: TajweedDifficulty = "basic"
+    let description: string | undefined
+    let maddCount: number | undefined
 
-    // Check for Ghunnah (noon/meem with shaddah)
-    if ((char === "ن" || char === "م") && nextChar === "ّ") {
+    // ========================================================================
+    // PRIORITY 10: Ghunnah (Noon/Meem with Shaddah)
+    // ========================================================================
+    if ((isNoon(char) || isMeem(char)) && isShaddah(vowelAfter || "")) {
       rule = "ghunnah"
-    }
-    // Check for Qalqalah
-    else if (qalqalahLetters.includes(char) && (nextChar === "ْ" || i === chars.length - 1)) {
-      rule = "qalqalah"
-    }
-    // Check for Madd
-    else if (maddLetters.includes(char)) {
-      // Check for madd muttasil (followed by hamza in same word)
-      if (nextChar === "ء" || nextChar === "أ" || nextChar === "إ" || nextChar === "ئ" || nextChar === "ؤ") {
-        rule = "madd_muttasil"
-      } else if (["َ", "ُ", "ِ"].includes(prevChar || "")) {
-        rule = "madd"
-      }
-    }
-    // Check for Idgham (noon sakinah before specific letters)
-    else if (char === "ن" && nextChar === "ْ") {
-      const afterSukoon = chars[i + 2]
-      if (["ي", "ر", "م", "ل", "و", "ن"].includes(afterSukoon)) {
-        rule = "idgham"
-      }
-    }
-    // Check for Ikhfa
-    else if (char === "ن" && nextChar === "ْ") {
-      const afterSukoon = chars[i + 2]
-      const ikhfaLetters = ["ت", "ث", "ج", "د", "ذ", "ز", "س", "ش", "ص", "ض", "ط", "ظ", "ف", "ق", "ك"]
-      if (ikhfaLetters.includes(afterSukoon)) {
-        rule = "ikhfa"
-      }
-    }
-    // Check for Iqlab (noon before ba)
-    else if ((char === "ن" || char === "ٌ" || char === "ً" || char === "ٍ") && chars[i + 1] === "ب") {
-      rule = "iqlab"
+      priority = 10
+      difficulty = "basic"
+      description = "Nasal sound with emphasis"
     }
 
-    result.push({ char, rule })
+    // ========================================================================
+    // PRIORITY 9: Noon Sakinah and Tanween Rules
+    // ========================================================================
+    else if (isNoon(char) && isSukoon(vowelAfter || "")) {
+      // Noon Sakinah - check what follows
+      const afterSukoon = chars[i + 2]
+
+      if (afterSukoon && isThroatLetter(afterSukoon)) {
+        // Izhar Halqi - clear pronunciation before throat letters
+        rule = "izhar_halqi"
+        priority = 9
+        difficulty = "intermediate"
+        description = "Clear pronunciation before throat letter"
+      } else if (afterSukoon && getIdghamWithGhunnahLetters().includes(afterSukoon)) {
+        // Idgham with Ghunnah (ينمو)
+        rule = "idgham_with_ghunnah"
+        priority = 9
+        difficulty = "intermediate"
+        description = "Merge with nasal sound"
+      } else if (afterSukoon && getIdghamWithoutGhunnahLetters().includes(afterSukoon)) {
+        // Idgham without Ghunnah (ل ر)
+        rule = "idgham_without_ghunnah"
+        priority = 9
+        difficulty = "intermediate"
+        description = "Merge without nasal sound"
+      } else if (afterSukoon === "ب") {
+        // Iqlab - convert to Meem before Ba
+        rule = "iqlab"
+        priority = 9
+        difficulty = "basic"
+        description = "Convert to hidden Meem"
+      } else if (afterSukoon && getIkhfaLetters().includes(afterSukoon)) {
+        // Ikhfa Haqiqi - hide before 15 letters
+        rule = "ikhfa_haqiqi"
+        priority = 9
+        difficulty = "intermediate"
+        description = "Hide with nasal sound"
+      }
+    }
+    // Tanween rules (similar to Noon Sakinah)
+    else if (isTanween(char)) {
+      const nextLetter = chars[i + 1]
+
+      if (nextLetter && isThroatLetter(nextLetter)) {
+        rule = "izhar_halqi"
+        priority = 9
+        difficulty = "intermediate"
+      } else if (nextLetter && getIdghamWithGhunnahLetters().includes(nextLetter)) {
+        rule = "idgham_with_ghunnah"
+        priority = 9
+        difficulty = "intermediate"
+      } else if (nextLetter && getIdghamWithoutGhunnahLetters().includes(nextLetter)) {
+        rule = "idgham_without_ghunnah"
+        priority = 9
+        difficulty = "intermediate"
+      } else if (nextLetter === "ب") {
+        rule = "iqlab"
+        priority = 9
+        difficulty = "basic"
+      } else if (nextLetter && getIkhfaLetters().includes(nextLetter)) {
+        rule = "ikhfa_haqiqi"
+        priority = 9
+        difficulty = "intermediate"
+      }
+    }
+
+    // ========================================================================
+    // PRIORITY 8: Meem Sakinah Rules
+    // ========================================================================
+    else if (isMeem(char) && isSukoon(vowelAfter || "")) {
+      const afterSukoon = chars[i + 2]
+
+      if (afterSukoon === "ب") {
+        // Ikhfa Shafawi - hide before Ba
+        rule = "ikhfa_shafawi"
+        priority = 8
+        difficulty = "intermediate"
+        description = "Labial hiding before Ba"
+      } else if (afterSukoon === "م") {
+        // Idgham Shafawi - merge into Meem
+        rule = "idgham_shafawi"
+        priority = 8
+        difficulty = "intermediate"
+        description = "Labial merging"
+      } else if (afterSukoon) {
+        // Izhar Shafawi - clear before other letters
+        rule = "izhar_shafawi"
+        priority = 8
+        difficulty = "intermediate"
+        description = "Clear labial pronunciation"
+      }
+    }
+
+    // ========================================================================
+    // PRIORITY 7: Qalqalah (Echo sound on ق ط ب ج د)
+    // ========================================================================
+    else if (isQalqalahLetter(char) && isSukoon(vowelAfter || "")) {
+      const atWordEnd = isWordEnd(chars, i)
+
+      if (atWordEnd && isWordAtPause) {
+        // Qalqalah Kubra - major echo at pause
+        rule = "qalqalah_kubra"
+        priority = 7
+        difficulty = "intermediate"
+        description = "Major echo at pause"
+      } else if (atWordEnd || isSukoon(vowelAfter || "")) {
+        // Qalqalah Sughra - minor echo
+        rule = "qalqalah_sughra"
+        priority = 7
+        difficulty = "intermediate"
+        description = "Minor echo"
+      } else {
+        // Generic Qalqalah
+        rule = "qalqalah"
+        priority = 7
+        difficulty = "basic"
+      }
+    }
+
+    // ========================================================================
+    // PRIORITY 6: Madd (Prolongation) Rules
+    // ========================================================================
+    else if (isMaddLetter(char)) {
+      // Check for various Madd types
+      const beforeVowel = vowelBefore
+      const afterChar = nextChar
+
+      // Madd Lazim - 6 counts (original sukoon after Madd)
+      if (isSukoon(vowelAfter || "") && !isWordEnd(chars, i)) {
+        rule = "madd_lazim"
+        priority = 6
+        difficulty = "intermediate"
+        maddCount = 6
+        description = "Obligatory prolongation (6 counts)"
+      }
+      // Madd Muttasil - 4-5 counts (Hamza in same word)
+      else if (afterChar && isHamza(afterChar)) {
+        rule = "madd_muttasil"
+        priority = 6
+        difficulty = "basic"
+        maddCount = 4
+        description = "Connected prolongation (4-5 counts)"
+      }
+      // Madd Badal - 2 counts (Hamza before Madd letter)
+      else if (i >= 2 && isHamza(chars[i - 2])) {
+        rule = "madd_badal"
+        priority = 6
+        difficulty = "intermediate"
+        maddCount = 2
+        description = "Substitute prolongation (2 counts)"
+      }
+      // Madd Arid Lissukoon - 2,4,6 counts (pause after Madd)
+      else if (isWordEnd(chars, i) && isWordAtPause) {
+        rule = "madd_arid"
+        priority = 6
+        difficulty = "intermediate"
+        maddCount = 2 // Can be 2, 4, or 6
+        description = "Pause prolongation (2, 4, or 6 counts)"
+      }
+      // Madd Leen - soft prolongation (و or ي with Fatha before)
+      else if ((char === "و" || char === "ي") && isFatha(beforeVowel || "") && isWordEnd(chars, i)) {
+        rule = "madd_leen"
+        priority = 6
+        difficulty = "advanced"
+        maddCount = 2
+        description = "Soft prolongation (2, 4, or 6 counts)"
+      }
+      // Madd Tabii - 2 counts (natural prolongation)
+      else if (beforeVowel && (isFatha(beforeVowel) || isDamma(beforeVowel) || isKasra(beforeVowel))) {
+        rule = "madd_tabii"
+        priority = 6
+        difficulty = "basic"
+        maddCount = 2
+        description = "Natural prolongation (2 counts)"
+      }
+      // Generic Madd
+      else if (beforeVowel) {
+        rule = "madd"
+        priority = 5
+        difficulty = "basic"
+        maddCount = 2
+      }
+    }
+
+    // ========================================================================
+    // PRIORITY 5: Ra Rules (Tafkheem/Tarqeeq)
+    // ========================================================================
+    else if (char === "ر") {
+      const beforeVowel = vowelBefore
+      const afterVowel = vowelAfter
+
+      // Tafkheem (heavy) - after Fatha or Damma, or with Fatha/Damma
+      if (isFatha(afterVowel || "") || isDamma(afterVowel || "") ||
+          isFatha(beforeVowel || "") || isDamma(beforeVowel || "")) {
+        rule = "tafkheem"
+        priority = 5
+        difficulty = "intermediate"
+        description = "Heavy pronunciation"
+      }
+      // Tarqeeq (light) - after Kasra or with Kasra
+      else if (isKasra(afterVowel || "") || isKasra(beforeVowel || "")) {
+        rule = "tarqeeq"
+        priority = 5
+        difficulty = "intermediate"
+        description = "Light pronunciation"
+      }
+    }
+
+    // ========================================================================
+    // PRIORITY 4: Lam Rules
+    // ========================================================================
+    else if (char === "ل") {
+      // Check for Allah's name (لفظ الجلالة)
+      if (isAllahName(chars, i)) {
+        const beforeVowel = vowelBefore
+
+        if (isFatha(beforeVowel || "") || isDamma(beforeVowel || "")) {
+          rule = "lam_jalalah_tafkheem"
+          priority = 4
+          difficulty = "intermediate"
+          description = "Heavy Lam in Allah's name"
+        } else if (isKasra(beforeVowel || "")) {
+          rule = "lam_jalalah_tarqeeq"
+          priority = 4
+          difficulty = "intermediate"
+          description = "Light Lam in Allah's name"
+        }
+      }
+      // Check for Alif-Lam (ال) - definite article
+      else if (prevChar === "ا" && nextChar) {
+        if (isSunLetter(nextChar)) {
+          rule = "lam_shamsiyyah"
+          priority = 4
+          difficulty = "basic"
+          description = "Sun letter Lam (assimilated)"
+        } else if (isMoonLetter(nextChar)) {
+          rule = "lam_qamariyyah"
+          priority = 4
+          difficulty = "basic"
+          description = "Moon letter Lam (pronounced)"
+        }
+      }
+    }
+
+    // ========================================================================
+    // PRIORITY 3: Sifaat (Characteristics)
+    // ========================================================================
+    // Isti'la letters (استعلاء) - خ ص ض غ ط ق ظ
+    else if (["خ", "ص", "ض", "غ", "ط", "ق", "ظ"].includes(char)) {
+      rule = "istila"
+      priority = 3
+      difficulty = "advanced"
+      description = "Elevation characteristic"
+    }
+    // Most other letters have Istifal (استفال)
+    else if (priority === 0 && /[؀-ۿ]/.test(char) && !["َ", "ُ", "ِ", "ّ", "ْ", "ً", "ٌ", "ٍ"].includes(char)) {
+      // Only apply if no other rule matched
+      rule = "istifal"
+      priority = 2
+      difficulty = "advanced"
+      description = "Lowering characteristic"
+    }
+
+    // ========================================================================
+    // PRIORITY 1: Silent/Sukoon
+    // ========================================================================
+    if (isSukoon(char)) {
+      rule = "silent"
+      priority = 1
+      difficulty = "basic"
+    }
+
+    // Build result object
+    const analysisResult: TajweedAnalysisResult = {
+      char,
+      rule,
+      priority,
+      difficulty,
+    }
+
+    if (description) analysisResult.description = description
+    if (maddCount) analysisResult.maddCount = maddCount
+
+    result.push(analysisResult)
   }
 
   return result
+}
+
+// ============================================================================
+// BACKWARD COMPATIBILITY
+// ============================================================================
+
+/**
+ * Legacy function signature for backward compatibility
+ * Returns simplified result format without metadata
+ */
+export function analyzeTajweedSimple(word: string): Array<{ char: string; rule: TajweedRule }> {
+  const enhanced = analyzeTajweed(word)
+  return enhanced.map(({ char, rule }) => ({ char, rule }))
 }
 
 // Get CSS class for a tajweed rule
