@@ -7,17 +7,18 @@ import { useState, useMemo } from "react"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Button } from "@/components/ui/button"
-import { Volume2, BookOpen, Languages, Sparkles, Palette } from "lucide-react"
+import { Volume2, BookOpen, Languages, Sparkles, Palette, Info } from "lucide-react"
 import { useI18n, toArabicNumeral } from "@/lib/i18n"
-import { analyzeTajweed, getTajweedStyle, TAJWEED_RULES } from "@/lib/tajweed"
+import { analyzeTajweed, getTajweedStyle, TAJWEED_RULES, type TajweedRule } from "@/lib/tajweed"
 import { cn } from "@/lib/utils"
+import { useQuran } from "@/contexts/quran-context"
 
 interface ClickableWordProps {
   word: string
   surah: number
   verse: number
   position: number
-  showTajweed?: boolean
+  showTajweed?: boolean // Deprecated: use QuranContext settings instead
 }
 
 // Mock word data - in production this would come from admin API
@@ -73,22 +74,92 @@ export default function ClickableWord({ word, surah, verse, position, showTajwee
   const [isOpen, setIsOpen] = useState(false)
   const [isHovered, setIsHovered] = useState(false)
   const { t, language } = useI18n()
+  const { settings } = useQuran()
 
   const wordData = getWordData(word, language)
 
   const tajweedAnalysis = useMemo(() => analyzeTajweed(word), [word])
 
+  // Filter rules based on difficulty level
+  const filteredTajweedAnalysis = useMemo(() => {
+    const difficultyLevels = {
+      basic: ["basic"],
+      intermediate: ["basic", "intermediate"],
+      advanced: ["basic", "intermediate", "advanced"],
+    }
+    const allowedDifficulties = difficultyLevels[settings.tajweedDifficulty]
+
+    return tajweedAnalysis.map((item) => {
+      // Check if rule is enabled and difficulty matches
+      const ruleEnabled = settings.tajweedRules[item.rule]
+      const difficultyMatches = allowedDifficulties.includes(item.difficulty)
+
+      if (!ruleEnabled || !difficultyMatches) {
+        return { ...item, rule: "normal" as TajweedRule }
+      }
+      return item
+    })
+  }, [tajweedAnalysis, settings.tajweedRules, settings.tajweedDifficulty])
+
+  // Apply color intensity adjustment to styles
+  const getAdjustedTajweedStyle = (rule: TajweedRule) => {
+    const baseStyle = getTajweedStyle(rule, settings.showTajweed)
+
+    if (!settings.showTajweed || rule === "normal") {
+      return baseStyle
+    }
+
+    const ruleInfo = TAJWEED_RULES[rule]
+    const intensity = settings.tajweedColorIntensity / 100
+
+    // Parse rgba background color and adjust opacity
+    const bgMatch = ruleInfo.bgColor.match(/rgba\((\d+),\s*(\d+),\s*(\d+),\s*([\d.]+)\)/)
+    if (bgMatch) {
+      const [, r, g, b, a] = bgMatch
+      const adjustedAlpha = parseFloat(a) * intensity
+      baseStyle.backgroundColor = `rgba(${r}, ${g}, ${b}, ${adjustedAlpha})`
+    }
+
+    return {
+      ...baseStyle,
+      transition: "all 0.2s ease-in-out",
+    }
+  }
+
   // Render word with tajweed colors
   const renderTajweedWord = () => {
-    if (!showTajweed) {
+    // Use prop for backward compatibility, but prefer context setting
+    const shouldShowTajweed = settings.showTajweed ?? showTajweed
+
+    if (!shouldShowTajweed) {
       return word
     }
 
-    return tajweedAnalysis.map((item, idx) => (
-      <span key={idx} style={getTajweedStyle(item.rule, true)} title={TAJWEED_RULES[item.rule]?.nameArabic}>
-        {item.char}
-      </span>
-    ))
+    // Group consecutive characters with same rule for better performance
+    const grouped: Array<{ chars: string; rule: TajweedRule; priority: number }> = []
+
+    filteredTajweedAnalysis.forEach((item) => {
+      const lastGroup = grouped[grouped.length - 1]
+      if (lastGroup && lastGroup.rule === item.rule) {
+        lastGroup.chars += item.char
+      } else {
+        grouped.push({ chars: item.char, rule: item.rule, priority: item.priority })
+      }
+    })
+
+    return grouped.map((group, idx) => {
+      const ruleInfo = TAJWEED_RULES[group.rule]
+      return (
+        <span
+          key={idx}
+          style={getAdjustedTajweedStyle(group.rule)}
+          title={ruleInfo?.nameArabic}
+          className="tajweed-char"
+        >
+          {group.chars}
+        </span>
+      )
+    })
   }
 
   // Get translation in current language
@@ -112,10 +183,9 @@ export default function ClickableWord({ word, surah, verse, position, showTajwee
           isHovered && "bg-primary/5",
         )}
         style={{
-          fontSize: "clamp(0.9rem, 2.8vh, 1.8rem)", // Restore font size
+          fontSize: "clamp(0.9rem, 2.8vh, 1.8rem)",
           lineHeight: 1.8,
           display: "inline-block",
-          // Eliminate whitespace manually if needed, but flex/inline-block with 0 parent handles it
         }}
         data-word-interactive="true"
         role="button"
@@ -234,26 +304,117 @@ export default function ClickableWord({ word, surah, verse, position, showTajwee
                 <p className="text-4xl font-amiri mb-4">{renderTajweedWord()}</p>
               </div>
 
+              {/* Character-by-character breakdown */}
+              <div className="space-y-2">
+                <h4 className="font-bold text-sm text-muted-foreground flex items-center gap-2">
+                  <Info className="h-4 w-4" />
+                  تحليل حرف بحرف:
+                </h4>
+                <div className="grid grid-cols-1 gap-2 max-h-48 overflow-y-auto">
+                  {tajweedAnalysis
+                    .filter((item) => item.rule !== "normal" && !["َ", "ُ", "ِ", "ّ", "ْ", "ً", "ٌ", "ٍ"].includes(item.char))
+                    .map((item, idx) => {
+                      const ruleInfo = TAJWEED_RULES[item.rule]
+                      return (
+                        <div
+                          key={idx}
+                          className="p-2 rounded-lg flex items-center gap-3 text-sm border"
+                          style={{ borderColor: ruleInfo.color + "40" }}
+                        >
+                          <span className="text-2xl font-amiri" style={getAdjustedTajweedStyle(item.rule)}>
+                            {item.char}
+                          </span>
+                          <div className="flex-1">
+                            <p className="font-bold font-amiri text-xs" style={{ color: ruleInfo.color }}>
+                              {ruleInfo.nameArabic}
+                            </p>
+                            {item.description && (
+                              <p className="text-xs text-muted-foreground">{item.description}</p>
+                            )}
+                            {item.maddCount && (
+                              <p className="text-xs text-muted-foreground">
+                                {item.maddCount} {language === "ar" ? "حركات" : "counts"}
+                              </p>
+                            )}
+                          </div>
+                          <div className="flex items-center gap-1">
+                            <span
+                              className="text-xs px-2 py-0.5 rounded-full"
+                              style={{
+                                backgroundColor: ruleInfo.bgColor,
+                                color: ruleInfo.color,
+                              }}
+                            >
+                              {ruleInfo.difficulty === "basic"
+                                ? "أساسي"
+                                : ruleInfo.difficulty === "intermediate"
+                                  ? "متوسط"
+                                  : "متقدم"}
+                            </span>
+                            <span className="text-xs text-muted-foreground">P{item.priority}</span>
+                          </div>
+                        </div>
+                      )
+                    })}
+                </div>
+              </div>
+
+              {/* All detected rules with priorities */}
               <div className="space-y-2">
                 <h4 className="font-bold text-sm text-muted-foreground">قواعد التجويد في هذه الكلمة:</h4>
                 {[...new Set(tajweedAnalysis.map((a) => a.rule))]
                   .filter((r) => r !== "normal")
+                  .sort((a, b) => {
+                    const aPriority = tajweedAnalysis.find((item) => item.rule === a)?.priority || 0
+                    const bPriority = tajweedAnalysis.find((item) => item.rule === b)?.priority || 0
+                    return bPriority - aPriority
+                  })
                   .map((rule) => {
                     const ruleInfo = TAJWEED_RULES[rule]
+                    const ruleItem = tajweedAnalysis.find((item) => item.rule === rule)
                     return (
                       <div
                         key={rule}
-                        className="p-3 rounded-lg flex items-center gap-3"
+                        className="p-3 rounded-lg flex items-start gap-3 transition-all hover:shadow-md"
                         style={{ backgroundColor: ruleInfo.bgColor }}
                       >
-                        <div className="w-4 h-4 rounded-full" style={{ backgroundColor: ruleInfo.color }} />
-                        <div>
-                          <p className="font-bold font-amiri" style={{ color: ruleInfo.color }}>
-                            {ruleInfo.nameArabic}
-                          </p>
-                          <p className="text-sm text-muted-foreground">
+                        <div className="w-4 h-4 rounded-full mt-1" style={{ backgroundColor: ruleInfo.color }} />
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2 mb-1">
+                            <p className="font-bold font-amiri" style={{ color: ruleInfo.color }}>
+                              {ruleInfo.nameArabic}
+                            </p>
+                            <span className="text-xs text-muted-foreground">({ruleInfo.nameEnglish})</span>
+                            <span
+                              className="text-xs px-2 py-0.5 rounded-full ml-auto"
+                              style={{
+                                backgroundColor: ruleInfo.color + "20",
+                                color: ruleInfo.color,
+                              }}
+                            >
+                              {ruleInfo.difficulty === "basic"
+                                ? "أساسي"
+                                : ruleInfo.difficulty === "intermediate"
+                                  ? "متوسط"
+                                  : "متقدم"}
+                            </span>
+                          </div>
+                          <p className="text-sm text-muted-foreground mb-2">
                             {ruleInfo.description[language as "ar" | "en" | "ur"] || ruleInfo.description.ar}
                           </p>
+                          {ruleItem?.maddCount && (
+                            <p className="text-xs text-muted-foreground">
+                              المد: {ruleItem.maddCount} حركات
+                            </p>
+                          )}
+                          <Button
+                            variant="link"
+                            size="sm"
+                            className="h-auto p-0 text-xs"
+                            style={{ color: ruleInfo.color }}
+                          >
+                            تعلم المزيد ←
+                          </Button>
                         </div>
                       </div>
                     )
@@ -269,7 +430,7 @@ export default function ClickableWord({ word, surah, verse, position, showTajwee
                 <h4 className="font-bold text-sm text-muted-foreground mb-3">دليل الألوان:</h4>
                 <div className="grid grid-cols-2 gap-2 text-sm">
                   {Object.values(TAJWEED_RULES)
-                    .filter((r) => r.id !== "normal")
+                    .filter((r) => r.id !== "normal" && settings.tajweedRules[r.id])
                     .slice(0, 8)
                     .map((rule) => (
                       <div key={rule.id} className="flex items-center gap-2">
