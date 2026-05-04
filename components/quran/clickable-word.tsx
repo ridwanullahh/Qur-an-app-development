@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button"
 import { Volume2, BookOpen, Languages, Sparkles, Palette, Info } from "lucide-react"
 import { useI18n, toArabicNumeral } from "@/lib/i18n"
 import { analyzeTajweed, getTajweedStyle, TAJWEED_RULES, type TajweedRule } from "@/lib/tajweed"
+import { getColorblindColors, applyPatternOverlay } from "@/lib/accessibility"
 import { cn } from "@/lib/utils"
 import { useQuran } from "@/contexts/quran-context"
 
@@ -109,7 +110,13 @@ export default function ClickableWord({ word, surah, verse, position, showTajwee
       return baseStyle
     }
 
-    const ruleInfo = TAJWEED_RULES[rule]
+    // Apply colorblind mode if enabled
+    let ruleInfo = TAJWEED_RULES[rule]
+    if (settings.colorblindMode !== "none") {
+      const colorblindColors = getColorblindColors(rule, settings.colorblindMode)
+      ruleInfo = { ...ruleInfo, ...colorblindColors }
+    }
+
     const intensity = settings.tajweedColorIntensity / 100
 
     // Parse rgba background color and adjust opacity
@@ -120,9 +127,22 @@ export default function ClickableWord({ word, surah, verse, position, showTajwee
       baseStyle.backgroundColor = `rgba(${r}, ${g}, ${b}, ${adjustedAlpha})`
     }
 
+    // Apply pattern overlays if enabled
+    if (settings.usePatternOverlays) {
+      const patternStyle = applyPatternOverlay(rule, true)
+      Object.assign(baseStyle, patternStyle)
+    }
+
+    // Apply high contrast mode adjustments
+    if (settings.highContrastMode) {
+      baseStyle.fontWeight = "600"
+      baseStyle.border = `1px solid ${ruleInfo.color}`
+    }
+
     return {
       ...baseStyle,
-      transition: "all 0.2s ease-in-out",
+      color: ruleInfo.color,
+      transition: settings.reducedMotion ? "none" : "all 0.2s ease-in-out",
     }
   }
 
@@ -149,12 +169,17 @@ export default function ClickableWord({ word, surah, verse, position, showTajwee
 
     return grouped.map((group, idx) => {
       const ruleInfo = TAJWEED_RULES[group.rule]
+      const ruleName = ruleInfo?.nameArabic || ""
+      const ruleDescription = ruleInfo?.description[language as "ar" | "en" | "ur"] || ruleInfo?.description.ar || ""
+
       return (
         <span
           key={idx}
           style={getAdjustedTajweedStyle(group.rule)}
           title={ruleInfo?.nameArabic}
           className="tajweed-char"
+          role="text"
+          aria-label={`${group.chars} - ${ruleName}: ${ruleDescription}`}
         >
           {group.chars}
         </span>
@@ -180,6 +205,7 @@ export default function ClickableWord({ word, surah, verse, position, showTajwee
         className={cn(
           "cursor-pointer transition-all duration-200 inline-block",
           "hover:bg-primary/10 rounded-sm",
+          "focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2",
           isHovered && "bg-primary/5",
         )}
         style={{
@@ -190,8 +216,13 @@ export default function ClickableWord({ word, surah, verse, position, showTajwee
         data-word-interactive="true"
         role="button"
         tabIndex={0}
-        aria-label={`كلمة: ${word}`}
-        onKeyDown={(e) => e.key === "Enter" && setIsOpen(true)}
+        aria-label={`${language === "ar" ? "كلمة" : language === "ur" ? "لفظ" : "Word"}: ${word}. ${language === "ar" ? "اضغط للتفاصيل" : language === "ur" ? "تفصیلات کے لیے دبائیں" : "Press for details"}`}
+        onKeyDown={(e) => {
+          if (e.key === "Enter" || e.key === " ") {
+            e.preventDefault()
+            setIsOpen(true)
+          }
+        }}
       >
         {renderTajweedWord()}
       </span>

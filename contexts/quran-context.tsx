@@ -23,6 +23,11 @@ interface QuranSettings {
   tajweedRules: Record<TajweedRule, boolean>
   tajweedDifficulty: "basic" | "intermediate" | "advanced"
   tajweedColorIntensity: number
+  // Accessibility settings
+  colorblindMode: "none" | "protanopia" | "deuteranopia" | "tritanopia"
+  usePatternOverlays: boolean
+  highContrastMode: boolean
+  reducedMotion: boolean
 }
 
 interface QuranContextType {
@@ -92,6 +97,11 @@ const defaultSettings: QuranSettings = {
   },
   tajweedDifficulty: "basic",
   tajweedColorIntensity: 80,
+  // Accessibility defaults
+  colorblindMode: "none",
+  usePatternOverlays: false,
+  highContrastMode: false,
+  reducedMotion: false,
 }
 
 const QuranContext = createContext<QuranContextType | undefined>(undefined)

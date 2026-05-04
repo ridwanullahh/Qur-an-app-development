@@ -198,26 +198,40 @@ export default function TajweedLegend({ placement = "floating", onRuleClick, cla
           <CollapsibleTrigger asChild>
             <Button
               variant="ghost"
-              className="w-full flex items-center justify-between p-4 hover:bg-muted/50"
-              aria-label={isOpen ? "إغلاق دليل التجويد" : "فتح دليل التجويد"}
+              className="w-full flex items-center justify-between p-4 hover:bg-muted/50 focus:ring-2 focus:ring-primary focus:ring-offset-2"
+              aria-label={
+                isOpen
+                  ? language === "en"
+                    ? "Close Tajweed Legend"
+                    : language === "ur"
+                      ? "تجوید کی رہنما بند کریں"
+                      : "إغلاق دليل التجويد"
+                  : language === "en"
+                    ? "Open Tajweed Legend"
+                    : language === "ur"
+                      ? "تجوید کی رہنما کھولیں"
+                      : "فتح دليل التجويد"
+              }
+              aria-expanded={isOpen}
+              aria-controls="tajweed-legend-content"
             >
               <div className="flex items-center gap-2">
-                <Palette className="h-5 w-5 text-primary" />
+                <Palette className="h-5 w-5 text-primary" aria-hidden="true" />
                 <span className="font-bold text-lg">
                   {language === "en" ? "Tajweed Legend" : language === "ur" ? "تجوید کی رہنما" : "دليل التجويد"}
                 </span>
               </div>
-              {isOpen ? <ChevronDown className="h-5 w-5" /> : <ChevronUp className="h-5 w-5" />}
+              {isOpen ? <ChevronDown className="h-5 w-5" aria-hidden="true" /> : <ChevronUp className="h-5 w-5" aria-hidden="true" />}
             </Button>
           </CollapsibleTrigger>
 
           {/* Content */}
-          <CollapsibleContent>
-            <div className="border-t">
+          <CollapsibleContent id="tajweed-legend-content">
+            <div className="border-t" role="region" aria-label={language === "en" ? "Tajweed rules list" : language === "ur" ? "تجوید کے قواعد کی فہرست" : "قائمة قواعد التجويد"}>
               {/* Search and Filters */}
               <div className="p-4 space-y-3 border-b bg-muted/30">
                 <div className="relative">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" aria-hidden="true" />
                   <Input
                     type="text"
                     placeholder={
@@ -230,6 +244,7 @@ export default function TajweedLegend({ placement = "floating", onRuleClick, cla
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     className="pl-9 pr-9"
+                    aria-label={language === "en" ? "Search Tajweed rules" : language === "ur" ? "تجوید کے قواعد تلاش کریں" : "ابحث عن قواعد التجويد"}
                   />
                   {searchQuery && (
                     <Button
@@ -244,12 +259,14 @@ export default function TajweedLegend({ placement = "floating", onRuleClick, cla
                 </div>
 
                 {/* Difficulty Filter */}
-                <div className="flex items-center gap-2 flex-wrap">
-                  <Filter className="h-4 w-4 text-muted-foreground" />
+                <div className="flex items-center gap-2 flex-wrap" role="group" aria-label={language === "en" ? "Filter by difficulty level" : language === "ur" ? "مشکل کی سطح کے لحاظ سے فلٹر کریں" : "تصفية حسب مستوى الصعوبة"}>
+                  <Filter className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
                   <Button
                     variant={selectedDifficulty === "all" ? "default" : "outline"}
                     size="sm"
                     onClick={() => setSelectedDifficulty("all")}
+                    aria-pressed={selectedDifficulty === "all"}
+                    aria-label={language === "en" ? "Show all difficulty levels" : language === "ur" ? "تمام سطحیں دکھائیں" : "إظهار جميع المستويات"}
                   >
                     {language === "en" ? "All" : language === "ur" ? "تمام" : "الكل"}
                   </Button>
@@ -257,6 +274,8 @@ export default function TajweedLegend({ placement = "floating", onRuleClick, cla
                     variant={selectedDifficulty === "basic" ? "default" : "outline"}
                     size="sm"
                     onClick={() => setSelectedDifficulty("basic")}
+                    aria-pressed={selectedDifficulty === "basic"}
+                    aria-label={language === "en" ? "Show basic rules only" : language === "ur" ? "صرف بنیادی قواعد دکھائیں" : "إظهار القواعد الأساسية فقط"}
                   >
                     {getDifficultyLabel("basic")}
                   </Button>
@@ -264,6 +283,8 @@ export default function TajweedLegend({ placement = "floating", onRuleClick, cla
                     variant={selectedDifficulty === "intermediate" ? "default" : "outline"}
                     size="sm"
                     onClick={() => setSelectedDifficulty("intermediate")}
+                    aria-pressed={selectedDifficulty === "intermediate"}
+                    aria-label={language === "en" ? "Show intermediate rules only" : language === "ur" ? "صرف درمیانی قواعد دکھائیں" : "إظهار القواعد المتوسطة فقط"}
                   >
                     {getDifficultyLabel("intermediate")}
                   </Button>
@@ -271,6 +292,8 @@ export default function TajweedLegend({ placement = "floating", onRuleClick, cla
                     variant={selectedDifficulty === "advanced" ? "default" : "outline"}
                     size="sm"
                     onClick={() => setSelectedDifficulty("advanced")}
+                    aria-pressed={selectedDifficulty === "advanced"}
+                    aria-label={language === "en" ? "Show advanced rules only" : language === "ur" ? "صرف اعلیٰ قواعد دکھائیں" : "إظهار القواعد المتقدمة فقط"}
                   >
                     {getDifficultyLabel("advanced")}
                   </Button>
@@ -285,17 +308,20 @@ export default function TajweedLegend({ placement = "floating", onRuleClick, cla
                       {/* Category Header */}
                       <button
                         onClick={() => setActiveCategory(activeCategory === categoryKey ? null : categoryKey)}
-                        className="w-full flex items-center justify-between p-2 rounded-md hover:bg-muted/50 transition-colors"
+                        className="w-full flex items-center justify-between p-2 rounded-md hover:bg-muted/50 transition-colors focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
+                        aria-expanded={activeCategory === categoryKey || activeCategory === null}
+                        aria-controls={`category-${categoryKey}`}
+                        aria-label={`${getCategoryName(category)} - ${category.rules.length} ${language === "en" ? "rules" : language === "ur" ? "قواعد" : "قواعد"}`}
                       >
                         <h3 className="font-bold text-sm text-primary">{getCategoryName(category)}</h3>
-                        <Badge variant="secondary" className="text-xs">
+                        <Badge variant="secondary" className="text-xs" aria-hidden="true">
                           {category.rules.length}
                         </Badge>
                       </button>
 
                       {/* Rules in Category */}
                       {(activeCategory === categoryKey || activeCategory === null) && (
-                        <div className="space-y-1 pl-2">
+                        <div className="space-y-1 pl-2" id={`category-${categoryKey}`} role="group" aria-label={getCategoryName(category)}>
                           {category.rules.map((ruleId) => {
                             const rule = TAJWEED_RULES[ruleId]
                             if (!rule) return null
@@ -310,14 +336,21 @@ export default function TajweedLegend({ placement = "floating", onRuleClick, cla
                                   "group relative flex items-start gap-3 p-3 rounded-lg border transition-all cursor-pointer",
                                   isEnabled ? "bg-card hover:bg-muted/50" : "bg-muted/30 opacity-60",
                                   isHovered && "ring-2 ring-primary/50",
+                                  "focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2",
                                 )}
                                 onClick={() => handleRuleClick(ruleId)}
                                 onMouseEnter={() => setHoveredRule(ruleId)}
                                 onMouseLeave={() => setHoveredRule(null)}
                                 role="button"
                                 tabIndex={0}
-                                aria-label={`${rule.nameArabic} - ${isEnabled ? "مفعّل" : "معطّل"}`}
-                                onKeyDown={(e) => e.key === "Enter" && handleRuleClick(ruleId)}
+                                aria-label={`${rule.nameArabic} - ${rule.nameEnglish}. ${getDescription(rule)}. ${language === "en" ? (isEnabled ? "Enabled" : "Disabled") : language === "ur" ? (isEnabled ? "فعال" : "غیر فعال") : (isEnabled ? "مفعّل" : "معطّل")}. ${language === "en" ? "Press to toggle" : language === "ur" ? "ٹوگل کرنے کے لیے دبائیں" : "اضغط للتبديل"}`}
+                                aria-pressed={isEnabled}
+                                onKeyDown={(e) => {
+                                  if (e.key === "Enter" || e.key === " ") {
+                                    e.preventDefault()
+                                    handleRuleClick(ruleId)
+                                  }
+                                }}
                               >
                                 {/* Color Indicator */}
                                 <div
@@ -366,9 +399,9 @@ export default function TajweedLegend({ placement = "floating", onRuleClick, cla
                                       e.stopPropagation()
                                       // TODO: Play audio pronunciation
                                     }}
-                                    aria-label="استمع للنطق"
+                                    aria-label={language === "en" ? `Listen to pronunciation of ${rule.nameEnglish}` : language === "ur" ? `${rule.nameArabic} کی تلفظ سنیں` : `استمع للنطق ${rule.nameArabic}`}
                                   >
-                                    <Volume2 className="h-3.5 w-3.5" />
+                                    <Volume2 className="h-3.5 w-3.5" aria-hidden="true" />
                                   </Button>
                                   <Button
                                     variant="ghost"
@@ -378,9 +411,9 @@ export default function TajweedLegend({ placement = "floating", onRuleClick, cla
                                       e.stopPropagation()
                                       // TODO: Open detailed explanation
                                     }}
-                                    aria-label="اقرأ المزيد"
+                                    aria-label={language === "en" ? `Read more about ${rule.nameEnglish}` : language === "ur" ? `${rule.nameArabic} کے بارے میں مزید پڑھیں` : `اقرأ المزيد عن ${rule.nameArabic}`}
                                   >
-                                    <BookOpen className="h-3.5 w-3.5" />
+                                    <BookOpen className="h-3.5 w-3.5" aria-hidden="true" />
                                   </Button>
                                 </div>
                               </div>

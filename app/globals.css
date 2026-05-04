@@ -312,6 +312,94 @@
   --tajweed-intensity-high: 0.3;
 }
 
+/* ============================================================================
+   ACCESSIBILITY ENHANCEMENTS
+   ============================================================================ */
+
+/* Reduced Motion Support */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  .tajweed-char,
+  .tajweed-transition,
+  .tajweed-fade-in,
+  .tajweed-pulse {
+    animation: none !important;
+    transition: none !important;
+  }
+}
+
+/* High Contrast Mode Support */
+@media (prefers-contrast: high) {
+  :root {
+    /* Increase Tajweed color opacity for better visibility */
+    --tajweed-intensity-low: 0.15;
+    --tajweed-intensity-medium: 0.25;
+    --tajweed-intensity-high: 0.35;
+  }
+
+  /* Enhance all Tajweed background colors */
+  .tajweed-char {
+    border: 1px solid currentColor;
+  }
+
+  /* Stronger focus indicators */
+  *:focus-visible {
+    outline: 3px solid var(--ring) !important;
+    outline-offset: 3px !important;
+  }
+}
+
+/* Focus Indicators for Keyboard Navigation */
+*:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+.tajweed-char:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 1px;
+  background-color: var(--tajweed-focus);
+}
+
+/* Screen Reader Only Content */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
+
+/* Skip to Content Link */
+.skip-to-content {
+  position: absolute;
+  top: -40px;
+  left: 0;
+  background: var(--primary);
+  color: var(--primary-foreground);
+  padding: 8px 16px;
+  text-decoration: none;
+  z-index: 100;
+  border-radius: 0 0 4px 0;
+}
+
+.skip-to-content:focus {
+  top: 0;
+}
+
 .sepia {
   --background: oklch(0.94 0.03 70);
   --foreground: oklch(0.25 0.04 45);
