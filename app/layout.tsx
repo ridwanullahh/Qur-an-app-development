@@ -63,7 +63,6 @@ export default function RootLayout({
             <QuranProvider>{children}</QuranProvider>
           </AuthProvider>
         </I18nProvider>
-        <Analytics />
       </body>
     </html>
   )
