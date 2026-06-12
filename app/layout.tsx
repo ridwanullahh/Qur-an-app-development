@@ -1,8 +1,7 @@
-import type React from "react"
 // بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ
+import type React from "react"
 import type { Metadata, Viewport } from "next"
 import { Amiri, Noto_Sans_Arabic, Geist } from "next/font/google"
-import { Analytics } from "@vercel/analytics/next"
 import { AuthProvider } from "@/contexts/auth-context"
 import { QuranProvider } from "@/contexts/quran-context"
 import { I18nProvider } from "@/lib/i18n"
