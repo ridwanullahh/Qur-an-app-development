@@ -11,6 +11,7 @@ interface MushafFrameProps {
   juzNumber: number
   surahName: string
   isLeftPage?: boolean
+  bgColor?: string
 }
 
 export default function MushafFrame({
@@ -19,6 +20,7 @@ export default function MushafFrame({
   juzNumber,
   surahName,
   isLeftPage = false,
+  bgColor = "#FAF8F0",
 }: MushafFrameProps) {
   // Convert number to Arabic numerals
   const toArabicNumeral = (num: number): string => {
@@ -31,7 +33,7 @@ export default function MushafFrame({
   }
 
   return (
-    <div className="mushaf-frame-container relative bg-mushaf-cream">
+    <div className="mushaf-frame-container relative" style={{ backgroundColor: bgColor }}>
       {/* Outer decorative border */}
       <div className="absolute inset-0 p-2">
         <div className="w-full h-full border-[3px] border-mushaf-green rounded-sm relative">

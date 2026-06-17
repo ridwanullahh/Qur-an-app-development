@@ -23,6 +23,7 @@ interface QuranSettings {
   tajweedRules: Record<TajweedRule, boolean>
   tajweedDifficulty: "basic" | "intermediate" | "advanced"
   tajweedColorIntensity: number
+  mushafBgColor: string
   // Accessibility settings
   colorblindMode: "none" | "protanopia" | "deuteranopia" | "tritanopia"
   usePatternOverlays: boolean
@@ -66,6 +67,9 @@ interface QuranContextType {
   playAudio: () => void
   pauseAudio: () => void
   stopAudio: () => void
+
+  // Helpers
+  getSurahForPage: (pageNumber: number) => Surah | undefined
 }
 
 const defaultSettings: QuranSettings = {
@@ -94,14 +98,46 @@ const defaultSettings: QuranSettings = {
     lam_qamariyyah: true,
     silent: true,
     normal: true,
+    izhar_halqi: true,
+    idgham_with_ghunnah: true,
+    idgham_without_ghunnah: true,
+    ikhfa_haqiqi: true,
+    ikhfa_shafawi: true,
+    idgham_shafawi: true,
+    izhar_shafawi: true,
+    qalqalah_sughra: true,
+    qalqalah_kubra: true,
+    madd_tabii: true,
+    madd_badal: true,
+    madd_arid: true,
+    madd_leen: true,
+    madd_silah_sughra: true,
+    madd_silah_kubra: true,
+    madd_iwad: true,
+    madd_tamkeen: true,
+    madd_farq: true,
+    tafkheem: true,
+    tarqeeq: true,
+    lam_jalalah_tafkheem: true,
+    lam_jalalah_tarqeeq: true,
+    istila: true,
+    istifal: true,
   },
   tajweedDifficulty: "basic",
   tajweedColorIntensity: 80,
+  mushafBgColor: "#FAF8F0",
   // Accessibility defaults
   colorblindMode: "none",
   usePatternOverlays: false,
   highContrastMode: false,
   reducedMotion: false,
+}
+
+function getSurahForPageHelper(pageNumber: number): Surah | undefined {
+  for (let i = SURAHS.length - 1; i >= 0; i--) {
+    if (SURAHS[i].pageStart <= pageNumber) return SURAHS[i]
+  }
+  return SURAHS[0]
 }
 
 const QuranContext = createContext<QuranContextType | undefined>(undefined)
@@ -147,8 +183,7 @@ export function QuranProvider({ children }: { children: React.ReactNode }) {
   const goToPage = useCallback((pageNumber: number) => {
     if (pageNumber >= 1 && pageNumber <= 604) {
       setCurrentPage(pageNumber)
-      // Find first surah on this page
-      const surah = SURAHS.find((s) => s.pageStart <= pageNumber)
+      const surah = getSurahForPageHelper(pageNumber)
       if (surah) {
         setCurrentSurah(surah.number)
       }
@@ -226,6 +261,10 @@ export function QuranProvider({ children }: { children: React.ReactNode }) {
   const pauseAudio = useCallback(() => setIsPlaying(false), [])
   const stopAudio = useCallback(() => setIsPlaying(false), [])
 
+  const getSurahForPage = useCallback((pageNumber: number) => {
+    return getSurahForPageHelper(pageNumber)
+  }, [])
+
   return (
     <QuranContext.Provider
       value={{
@@ -253,6 +292,7 @@ export function QuranProvider({ children }: { children: React.ReactNode }) {
         playAudio,
         pauseAudio,
         stopAudio,
+        getSurahForPage,
       }}
     >
       {children}

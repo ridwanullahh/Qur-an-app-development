@@ -4,11 +4,11 @@
 @custom-variant dark (&:is(.dark *));
 
 :root {
-  --background: oklch(1 0 0);
+  --background: oklch(0.985 0.002 95);
   --foreground: oklch(0.145 0 0);
-  --card: oklch(1 0 0);
+  --card: oklch(0.993 0.001 95);
   --card-foreground: oklch(0.145 0 0);
-  --popover: oklch(1 0 0);
+  --popover: oklch(0.993 0.001 95);
   --popover-foreground: oklch(0.145 0 0);
   --primary: oklch(0.205 0 0);
   --primary-foreground: oklch(0.985 0 0);
@@ -37,6 +37,12 @@
   --sidebar-accent-foreground: oklch(0.205 0 0);
   --sidebar-border: oklch(0.922 0 0);
   --sidebar-ring: oklch(0.708 0 0);
+  /* Mushaf-specific colors */
+  --mushaf-cream: #FAF8F0;
+  --mushaf-green: #1a5f4a;
+  --mushaf-green-light: #2d7d5e;
+  --mushaf-gold: #c45c8a;
+  --mushaf-bg: #FAF8F0;
 }
 
 .dark {
@@ -113,6 +119,11 @@
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
+  --color-mushaf-cream: var(--mushaf-cream);
+  --color-mushaf-green: var(--mushaf-green);
+  --color-mushaf-green-light: var(--mushaf-green-light);
+  --color-mushaf-gold: var(--mushaf-gold);
+  --color-mushaf-bg: var(--mushaf-bg);
 }
 
 @layer base {
@@ -121,5 +132,32 @@
   }
   body {
     @apply bg-background text-foreground;
+  }
+}
+
+@layer components {
+  .mushaf-fullscreen {
+    height: calc(100dvh - 8rem);
+    min-height: 400px;
+  }
+
+  @media (max-width: 768px) {
+    .mushaf-spread-container .mushaf-page-single {
+      height: calc(100dvh - 10rem);
+      min-height: 350px;
+    }
+    .mushaf-spread-container .mushaf-page-single .qul-word,
+    .mushaf-spread-container .mushaf-page-single .tajweed-char {
+      font-size: clamp(1rem, 4.5vw, 1.8rem) !important;
+    }
+  }
+
+  .tajweed-char {
+    border-radius: 2px;
+    padding: 0 1px;
+    transition: background-color 0.15s ease;
+  }
+  .tajweed-char:hover {
+    filter: brightness(1.1);
   }
 }

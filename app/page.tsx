@@ -9,13 +9,15 @@ import LoadingSpinner from "@/components/ui/loading-spinner"
 
 export default function HomePage() {
   return (
-    <div className="min-h-screen flex flex-col bg-background">
+    <div className="min-h-dvh flex flex-col bg-background">
       <AppHeader />
 
       <div className="flex flex-1 overflow-hidden">
-        <AppSidebar />
+        <div className="hidden lg:block">
+          <AppSidebar />
+        </div>
 
-        <main className="flex-1 overflow-y-auto p-4 lg:p-6">
+        <main className="flex-1 overflow-y-auto p-2 sm:p-4 lg:p-6">
           <Suspense fallback={<LoadingSpinner />}>
             <QuranReader />
           </Suspense>

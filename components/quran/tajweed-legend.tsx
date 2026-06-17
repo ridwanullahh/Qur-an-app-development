@@ -4,7 +4,7 @@
 // Tajweed Legend Component - Interactive Educational Panel
 
 import { useState, useMemo } from "react"
-import { ChevronDown, ChevronUp, Search, Volume2, BookOpen, X, Filter } from "lucide-react"
+import { ChevronDown, ChevronUp, Search, Volume2, BookOpen, X, Filter, Palette } from "lucide-react"
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -104,7 +104,7 @@ export default function TajweedLegend({ placement = "floating", onRuleClick, cla
 
   // Filter rules based on search and difficulty
   const filteredCategories = useMemo(() => {
-    const filtered: typeof RULE_CATEGORIES = {} as any
+    const filtered: Record<string, { nameAr: string; nameEn: string; nameUr: string; rules: TajweedRule[] }> = {}
 
     Object.entries(RULE_CATEGORIES).forEach(([categoryKey, category]) => {
       const filteredRules = category.rules.filter((ruleId) => {
@@ -152,7 +152,7 @@ export default function TajweedLegend({ placement = "floating", onRuleClick, cla
     onRuleClick?.(rule)
   }
 
-  const getCategoryName = (category: (typeof RULE_CATEGORIES)[keyof typeof RULE_CATEGORIES]) => {
+  const getCategoryName = (category: { nameAr: string; nameEn: string; nameUr: string }) => {
     if (language === "en") return category.nameEn
     if (language === "ur") return category.nameUr
     return category.nameAr
@@ -357,7 +357,7 @@ export default function TajweedLegend({ placement = "floating", onRuleClick, cla
                                   className="w-4 h-4 rounded-full flex-shrink-0 mt-0.5 ring-2 ring-offset-2 ring-offset-background"
                                   style={{
                                     backgroundColor: rule.color,
-                                    ringColor: isEnabled ? rule.color : "transparent",
+                                    outlineColor: isEnabled ? rule.color : "transparent",
                                   }}
                                 />
 
@@ -466,6 +466,3 @@ export default function TajweedLegend({ placement = "floating", onRuleClick, cla
     </div>
   )
 }
-
-// Missing import
-import { Palette } from "lucide-react"
