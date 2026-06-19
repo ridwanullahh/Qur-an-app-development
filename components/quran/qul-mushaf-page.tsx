@@ -164,15 +164,37 @@ function AyahLine({ words, isCentered, showTajweed, settings }: AyahLineProps) {
         textAlign: isCentered ? "center" : "justify",
         textAlignLast: isCentered ? "center" : "justify",
         fontFeatureSettings: '"calt" 1, "liga" 1, "kern" 1',
-        wordSpacing: "0.1em",
-        lineHeight: 2,
+        whiteSpace: "pre-wrap",
+        lineHeight: 2.2,
+        wordSpacing: "0.15em",
       }}
     >
       {words.map((word, idx) => (
-        <TajweedWord key={`${word.word_key}-${idx}`} word={word} showTajweed={showTajweed} settings={settings} />
+        <span key={`${word.word_key}-${idx}`}>
+          <TajweedWord word={word} showTajweed={showTajweed} settings={settings} />
+          {idx < words.length - 1 && " "}
+        </span>
       ))}
     </div>
   )
+}
+
+function getPrimaryTajweedRule(analysis: Array<{ rule: TajweedRule }>): TajweedRule {
+  const nonNormal = analysis.filter((a) => a.rule !== "normal")
+  if (nonNormal.length === 0) return "normal"
+  const ruleCounts: Record<string, number> = {}
+  for (const item of nonNormal) {
+    ruleCounts[item.rule] = (ruleCounts[item.rule] || 0) + 1
+  }
+  let bestRule = nonNormal[0].rule
+  let bestCount = 0
+  for (const [rule, count] of Object.entries(ruleCounts)) {
+    if (count > bestCount) {
+      bestCount = count
+      bestRule = rule as TajweedRule
+    }
+  }
+  return bestRule
 }
 
 function TajweedWord({ word, showTajweed, settings }: { word: Word; showTajweed: boolean; settings: any }) {
@@ -181,7 +203,7 @@ function TajweedWord({ word, showTajweed, settings }: { word: Word; showTajweed:
   const wordStyle: React.CSSProperties = {
     fontFamily: "'qpc-hafs', serif",
     fontSize: "clamp(1.2rem, 4vh, 2.2rem)",
-    lineHeight: 2,
+    lineHeight: 2.2,
     display: "inline",
     fontFeatureSettings: '"calt" 1, "liga" 1, "kern" 1',
   }
@@ -198,37 +220,19 @@ function TajweedWord({ word, showTajweed, settings }: { word: Word; showTajweed:
     )
   }
 
-  const grouped: Array<{ chars: string; rule: TajweedRule }> = []
-
-  tajweedAnalysis.forEach((item) => {
-    const isEnabled = settings.tajweedRules?.[item.rule] !== false
-    const rule = isEnabled ? item.rule : ("normal" as TajweedRule)
-    const lastGroup = grouped[grouped.length - 1]
-    if (lastGroup && lastGroup.rule === rule) {
-      lastGroup.chars += item.char
-    } else {
-      grouped.push({ chars: item.char, rule })
-    }
-  })
+  const primaryRule = getPrimaryTajweedRule(tajweedAnalysis)
+  const isEnabled = settings.tajweedRules?.[primaryRule] !== false
+  const ruleInfo = isEnabled ? TAJWEED_RULES[primaryRule] : null
+  const color = ruleInfo && primaryRule !== "normal" ? ruleInfo.color : undefined
 
   return (
     <span
-      className="qul-word cursor-pointer hover:text-primary transition-colors"
-      style={wordStyle}
+      className="qul-word cursor-pointer hover:opacity-80 transition-opacity"
+      style={{ ...wordStyle, color }}
       data-word-key={word.word_key}
+      title={ruleInfo && primaryRule !== "normal" ? ruleInfo.nameArabic : undefined}
     >
-      {grouped.map((group, idx) => {
-        if (group.rule === "normal") {
-          return <span key={idx}>{group.chars}</span>
-        }
-        const ruleInfo = TAJWEED_RULES[group.rule]
-        if (!ruleInfo) return <span key={idx}>{group.chars}</span>
-        return (
-          <span key={idx} className="tajweed-char" style={{ color: ruleInfo.color }} title={ruleInfo.nameArabic}>
-            {group.chars}
-          </span>
-        )
-      })}
+      {word.text}
     </span>
   )
 }
