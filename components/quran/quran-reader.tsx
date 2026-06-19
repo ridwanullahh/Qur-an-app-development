@@ -10,6 +10,7 @@ import MushafPageSpread from "./mushaf-page-spread"
 import SurahHeader from "./surah-header"
 import VerseDisplay from "./verse-display"
 import NavigationControls from "./navigation-controls"
+import AudioPlayer from "@/components/audio/audio-player"
 import { hasBismillah, BISMILLAH } from "@/lib/quran-data"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Book, List, Settings2 } from "lucide-react"
@@ -24,7 +25,7 @@ import {
 } from "@/components/ui/dropdown-menu"
 
 export default function QuranReader() {
-  const { currentSurah, surahInfo, verses, settings, updateSettings } = useQuran()
+  const { currentSurah, currentVerse, surahInfo, verses, settings, updateSettings, currentPage, currentJuz, goToVerse } = useQuran()
   const { t, language, setLanguage, availableLanguages } = useI18n()
   const [viewMode, setViewMode] = useState<"mushaf" | "list">("mushaf")
 
@@ -56,9 +57,9 @@ export default function QuranReader() {
 
         {/* Current Position Info */}
         <div className="text-center flex-1 mx-4">
-          <p className="font-amiri text-lg font-bold text-primary">{surahInfo.nameArabic}</p>
+          <p className="font-amiri text-lg font-bold text-primary">القرآن الكريم</p>
           <p className="text-xs text-muted-foreground">
-            {t("quran.juz")} {surahInfo.juzStart} | {t("quran.page")} {surahInfo.pageStart}
+            {t("quran.juz")} {currentJuz} | {t("quran.page")} {currentPage}
           </p>
         </div>
 
@@ -165,6 +166,21 @@ export default function QuranReader() {
           </div>
         </div>
       )}
+
+      {/* Audio Player */}
+      <div className="mt-4">
+        <AudioPlayer
+          surahNumber={currentSurah}
+          verseNumber={currentVerse}
+          surahName={surahInfo.nameArabic}
+          totalVerses={surahInfo.versesCount}
+          onVerseChange={(v) => {
+            if (v >= 1 && v <= surahInfo.versesCount) {
+              goToVerse(currentSurah, v)
+            }
+          }}
+        />
+      </div>
 
       <NavigationControls />
     </div>

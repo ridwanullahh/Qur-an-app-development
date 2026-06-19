@@ -1208,8 +1208,5 @@ export function getTajweedStyle(rule: TajweedRule, showColors = true): React.CSS
   const ruleInfo = TAJWEED_RULES[rule]
   return {
     color: ruleInfo.color,
-    backgroundColor: ruleInfo.bgColor,
-    borderRadius: "2px",
-    padding: "0 1px",
   }
 }

@@ -117,32 +117,15 @@ export default function ClickableWord({ word, surah, verse, position, showTajwee
       ruleInfo = { ...ruleInfo, ...colorblindColors }
     }
 
-    const intensity = settings.tajweedColorIntensity / 100
-
-    // Parse rgba background color and adjust opacity
-    const bgMatch = ruleInfo.bgColor.match(/rgba\((\d+),\s*(\d+),\s*(\d+),\s*([\d.]+)\)/)
-    if (bgMatch) {
-      const [, r, g, b, a] = bgMatch
-      const adjustedAlpha = parseFloat(a) * intensity
-      baseStyle.backgroundColor = `rgba(${r}, ${g}, ${b}, ${adjustedAlpha})`
-    }
-
-    // Apply pattern overlays if enabled
-    if (settings.usePatternOverlays) {
-      const patternStyle = applyPatternOverlay(rule, true)
-      Object.assign(baseStyle, patternStyle)
-    }
-
     // Apply high contrast mode adjustments
     if (settings.highContrastMode) {
       baseStyle.fontWeight = "600"
-      baseStyle.border = `1px solid ${ruleInfo.color}`
     }
 
     return {
       ...baseStyle,
       color: ruleInfo.color,
-      transition: settings.reducedMotion ? "none" : "all 0.2s ease-in-out",
+      transition: settings.reducedMotion ? "none" : "color 0.2s ease-in-out",
     }
   }
 

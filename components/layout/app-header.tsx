@@ -23,7 +23,7 @@ export default function AppHeader() {
   const [searchQuery, setSearchQuery] = useState("")
   const [showSearch, setShowSearch] = useState(false)
   const [isDark, setIsDark] = useState(false)
-  const { goToSurah, currentSurah, surahInfo } = useQuran()
+  const { goToSurah, currentPage, currentJuz } = useQuran()
   const { user, isAuthenticated, logout } = useAuth()
 
   const toggleTheme = () => {
@@ -57,11 +57,12 @@ export default function AppHeader() {
           </Link>
         </div>
 
-        {/* Current Surah Info */}
+        {/* Current Position Info */}
         <div className="hidden md:flex items-center gap-2 text-sm">
-          <span className="text-muted-foreground">سورة</span>
-          <span className="font-bold arabic-text">{surahInfo?.nameArabic}</span>
-          <span className="text-muted-foreground">({surahInfo?.nameEnglish})</span>
+          <span className="text-muted-foreground">صفحة</span>
+          <span className="font-bold">{currentPage}</span>
+          <span className="text-muted-foreground">| الجزء</span>
+          <span className="font-bold">{currentJuz}</span>
         </div>
 
         {/* Search and Actions */}

@@ -112,10 +112,10 @@ export default function MushafPageContent({ pageNumber }: MushafPageContentProps
             display: "block",
             textAlign: "justify",
             textAlignLast: lineContent.type === "surahHeader" ? "center" : "justify",
-            fontSize: 0,
-            lineHeight: 0,
             width: "100%",
-            direction: "rtl"
+            direction: "rtl",
+            fontFeatureSettings: '"calt" 1, "liga" 1, "kern" 1',
+            lineHeight: 2,
           }}
         >
           {lineContent.type === "surahHeader" && lineContent.surah && (
@@ -124,7 +124,7 @@ export default function MushafPageContent({ pageNumber }: MushafPageContentProps
             </div>
           )}
           {lineContent.type === "content" && (
-            <span className="w-full block" style={{ textAlign: "justify", textAlignLast: "justify", fontSize: 0, lineHeight: 0 }}>
+            <span className="w-full block" style={{ textAlign: "justify", textAlignLast: "justify" }}>
               {lineContent.verses?.map((verse) => (
                 <ClickableVerse key={`${verse.surah}-${verse.verse}`} verse={verse} showTajweed={true}>
                   {renderVerseWithClickableWords(verse, true)}

@@ -3,11 +3,12 @@
 // بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ
 // QUL Mushaf Page Component - Renders Quran pages using offline QUL data with Tajweed
 
+import type React from "react"
 import { useEffect, useState, useMemo } from "react"
 import { getPageLayout, getWords, getSurahName, type PageLine, type Word } from "@/lib/quran-offline-db"
 import { cn } from "@/lib/utils"
 import { useQuran } from "@/contexts/quran-context"
-import { analyzeTajweed, getTajweedStyle, TAJWEED_RULES, type TajweedRule } from "@/lib/tajweed"
+import { analyzeTajweed, TAJWEED_RULES, type TajweedRule } from "@/lib/tajweed"
 
 interface QulMushafPageProps {
   pageNumber: number
@@ -162,8 +163,9 @@ function AyahLine({ words, isCentered, showTajweed, settings }: AyahLineProps) {
         fontFamily: "'qpc-hafs', serif",
         textAlign: isCentered ? "center" : "justify",
         textAlignLast: isCentered ? "center" : "justify",
-        fontSize: 0,
-        lineHeight: 0,
+        fontFeatureSettings: '"calt" 1, "liga" 1, "kern" 1',
+        wordSpacing: "0.1em",
+        lineHeight: 2,
       }}
     >
       {words.map((word, idx) => (
@@ -176,16 +178,19 @@ function AyahLine({ words, isCentered, showTajweed, settings }: AyahLineProps) {
 function TajweedWord({ word, showTajweed, settings }: { word: Word; showTajweed: boolean; settings: any }) {
   const tajweedAnalysis = useMemo(() => analyzeTajweed(word.text), [word.text])
 
+  const wordStyle: React.CSSProperties = {
+    fontFamily: "'qpc-hafs', serif",
+    fontSize: "clamp(1.2rem, 4vh, 2.2rem)",
+    lineHeight: 2,
+    display: "inline",
+    fontFeatureSettings: '"calt" 1, "liga" 1, "kern" 1',
+  }
+
   if (!showTajweed) {
     return (
       <span
-        className="qul-word cursor-pointer hover:bg-primary/10 rounded-sm transition-colors"
-        style={{
-          fontFamily: "'qpc-hafs', serif",
-          fontSize: "clamp(1.2rem, 4vh, 2.2rem)",
-          lineHeight: 1.8,
-          display: "inline-block",
-        }}
+        className="qul-word cursor-pointer hover:text-primary transition-colors"
+        style={wordStyle}
         data-word-key={word.word_key}
       >
         {word.text}
@@ -193,7 +198,6 @@ function TajweedWord({ word, showTajweed, settings }: { word: Word; showTajweed:
     )
   }
 
-  const intensity = (settings.tajweedColorIntensity ?? 80) / 100
   const grouped: Array<{ chars: string; rule: TajweedRule }> = []
 
   tajweedAnalysis.forEach((item) => {
@@ -209,13 +213,8 @@ function TajweedWord({ word, showTajweed, settings }: { word: Word; showTajweed:
 
   return (
     <span
-      className="qul-word cursor-pointer hover:bg-primary/10 rounded-sm transition-colors"
-      style={{
-        fontFamily: "'qpc-hafs', serif",
-        fontSize: "clamp(1.2rem, 4vh, 2.2rem)",
-        lineHeight: 1.8,
-        display: "inline-block",
-      }}
+      className="qul-word cursor-pointer hover:text-primary transition-colors"
+      style={wordStyle}
       data-word-key={word.word_key}
     >
       {grouped.map((group, idx) => {
@@ -224,14 +223,8 @@ function TajweedWord({ word, showTajweed, settings }: { word: Word; showTajweed:
         }
         const ruleInfo = TAJWEED_RULES[group.rule]
         if (!ruleInfo) return <span key={idx}>{group.chars}</span>
-        const style = getTajweedStyle(group.rule, true)
-        const bgMatch = ruleInfo.bgColor.match(/rgba\((\d+),\s*(\d+),\s*(\d+),\s*([\d.]+)\)/)
-        if (bgMatch) {
-          const [, r, g, b, a] = bgMatch
-          style.backgroundColor = `rgba(${r}, ${g}, ${b}, ${parseFloat(a) * intensity})`
-        }
         return (
-          <span key={idx} className="tajweed-char" style={style} title={ruleInfo.nameArabic}>
+          <span key={idx} className="tajweed-char" style={{ color: ruleInfo.color }} title={ruleInfo.nameArabic}>
             {group.chars}
           </span>
         )
